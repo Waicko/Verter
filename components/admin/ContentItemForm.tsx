@@ -1,0 +1,380 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import ReactMarkdown from "react-markdown";
+import type { DbContentItem, DbContentItemInsert } from "@/lib/db/content-types";
+import type { ItemPickerOption } from "@/lib/data/items-supabase";
+import RelatedItemsPicker from "@/components/admin/RelatedItemsPicker";
+import { cardClass, primaryBtn, secondaryBtn } from "@/lib/styles";
+
+type ContentType = "blog" | "review" | "podcast" | "comparison";
+type FormData = {
+  title: string;
+  slug: string;
+  content_type: ContentType;
+  author: string;
+  summary: string;
+  body: string;
+  hero_image: string;
+  related_item_ids: string[];
+  episode_url: string;
+  published_at: string;
+  status: "draft" | "published" | "archived";
+};
+
+interface ContentItemFormProps {
+  initial?: Partial<DbContentItem> | null;
+  locale: string;
+  mode: "create" | "edit";
+  items?: ItemPickerOption[];
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[åä]/g, "a")
+    .replace(/ö/g, "o")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export default function ContentItemForm({
+  initial,
+  locale,
+  mode,
+  items = [],
+}: ContentItemFormProps) {
+  const t = useTranslations("admin");
+  const tContent = useTranslations("content");
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [modeToggle, setModeToggle] = useState<"edit" | "preview">("edit");
+
+  const [data, setData] = useState<FormData>(() => ({
+    title: initial?.title ?? "",
+    slug: initial?.slug ?? "",
+    content_type: (initial?.content_type as ContentType) ?? "blog",
+    author: initial?.author ?? "",
+    summary: initial?.summary ?? "",
+    body: initial?.body ?? "",
+    hero_image: initial?.hero_image ?? "",
+    related_item_ids: Array.isArray(initial?.related_item_ids)
+      ? (initial.related_item_ids as string[]).filter(Boolean)
+      : [],
+    episode_url: initial?.episode_url ?? "",
+    published_at: initial?.published_at ?? "",
+    status: (initial?.status as FormData["status"]) ?? "draft",
+  }));
+
+  const buildPayload = (status: "draft" | "published"): DbContentItemInsert => {
+    const slug = data.slug.trim() || slugify(data.title);
+    return {
+      title: data.title.trim(),
+      slug,
+      content_type: data.content_type,
+      author: data.author.trim() || null,
+      summary: data.summary.trim() || null,
+      body: data.body.trim() || "",
+      hero_image: data.hero_image.trim() || null,
+      related_item_ids: data.related_item_ids,
+      episode_url: data.content_type === "podcast" ? (data.episode_url.trim() || null) : null,
+      published_at: data.published_at.trim() || null,
+      status,
+    };
+  };
+
+  const handleSubmit = async (publish: boolean) => {
+    setLoading(true);
+    try {
+      const payload = buildPayload(publish ? "published" : "draft");
+
+      if (mode === "edit" && initial?.id) {
+        const res = await fetch(`/api/admin/content/${initial.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) router.refresh();
+        else {
+          const err = await res.json();
+          alert(err.error ?? "Update failed");
+        }
+      } else {
+        const res = await fetch("/api/admin/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.id) {
+          router.push(`/${locale}/admin/content/${json.id}/edit`);
+        } else {
+          alert(json.error ?? "Create failed");
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (mode !== "edit" || !initial?.id || !confirm(t("archiveConfirm"))) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/content/${initial.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "archived" }),
+      });
+      if (res.ok) router.refresh();
+      else {
+        const err = await res.json();
+        alert(err.error ?? "Archive failed");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const typeLabels: Record<ContentType, string> = {
+    blog: tContent("blog"),
+    review: tContent("review"),
+    podcast: tContent("podcast"),
+    comparison: tContent("comparison"),
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setModeToggle(modeToggle === "edit" ? "preview" : "edit")}
+          className="rounded-pill border border-verter-border bg-white px-4 py-2 text-sm font-medium text-verter-graphite hover:bg-verter-snow"
+        >
+          {modeToggle === "edit" ? t("showPreview") : t("showEdit")}
+        </button>
+        <Link
+          href={`/${locale}/admin/content`}
+          className="rounded-pill border border-verter-border bg-white px-4 py-2 text-sm font-medium text-verter-graphite hover:bg-verter-snow"
+        >
+          {t("backToContent")}
+        </Link>
+      </div>
+
+      {modeToggle === "preview" ? (
+        <div className={cardClass}>
+          <div className="p-6">
+            <Link
+              href={`/${locale}/content`}
+              className="mb-4 inline-flex text-sm font-medium text-verter-muted hover:text-verter-graphite"
+            >
+              ← {t("backToContent")}
+            </Link>
+            {data.hero_image && (
+              <div className="mb-6 overflow-hidden rounded-card">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={data.hero_image}
+                  alt=""
+                  className="h-48 w-full object-cover sm:h-64"
+                />
+              </div>
+            )}
+            <span className="text-xs font-medium uppercase tracking-wider text-verter-muted">
+              {typeLabels[data.content_type] || data.content_type}
+            </span>
+            <h1 className="mt-2 font-heading text-2xl font-bold text-verter-graphite">
+              {data.title || t("content.previewTitle")}
+            </h1>
+            {data.summary && (
+              <p className="mt-2 text-lg text-verter-muted">{data.summary}</p>
+            )}
+            <div className="prose prose-zinc mt-6 max-w-none">
+              <ReactMarkdown>{data.body || ""}</ReactMarkdown>
+            </div>
+            {data.content_type === "podcast" && data.episode_url && (
+              <a
+                href={data.episode_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block rounded-card bg-verter-forest px-4 py-2 text-sm font-medium text-white hover:bg-verter-forest/90"
+              >
+                {tContent("listenEpisode")}
+              </a>
+            )}
+          </div>
+        </div>
+      ) : (
+        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <div className={cardClass}>
+            <div className="space-y-4 p-6">
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.title")}
+                </label>
+                <input
+                  type="text"
+                  value={data.title}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setData((d) => ({
+                      ...d,
+                      title: v,
+                      slug: d.slug || slugify(v),
+                    }));
+                  }}
+                  required
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.slug")}
+                </label>
+                <input
+                  type="text"
+                  value={data.slug}
+                  onChange={(e) => setData((d) => ({ ...d, slug: e.target.value }))}
+                  placeholder={slugify(data.title) || "my-post"}
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.contentType")}
+                </label>
+                <select
+                  value={data.content_type}
+                  onChange={(e) =>
+                    setData((d) => ({ ...d, content_type: e.target.value as ContentType }))
+                  }
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                >
+                  <option value="blog">{tContent("blog")}</option>
+                  <option value="review">{tContent("review")}</option>
+                  <option value="podcast">{tContent("podcast")}</option>
+                  <option value="comparison">{tContent("comparison")}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.author")}
+                </label>
+                <input
+                  type="text"
+                  value={data.author}
+                  onChange={(e) => setData((d) => ({ ...d, author: e.target.value }))}
+                  placeholder="Verter"
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.summary")}
+                </label>
+                <textarea
+                  value={data.summary}
+                  onChange={(e) => setData((d) => ({ ...d, summary: e.target.value }))}
+                  rows={2}
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.body")}
+                </label>
+                <textarea
+                  value={data.body}
+                  onChange={(e) => setData((d) => ({ ...d, body: e.target.value }))}
+                  rows={12}
+                  placeholder="Markdown supported"
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 font-mono text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.heroImageUrl")}
+                </label>
+                <input
+                  type="url"
+                  value={data.hero_image}
+                  onChange={(e) => setData((d) => ({ ...d, hero_image: e.target.value }))}
+                  placeholder="https://..."
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.relatedItemIds")}
+                </label>
+                <RelatedItemsPicker
+                  items={items}
+                  selectedIds={data.related_item_ids}
+                  onChange={(ids) => setData((d) => ({ ...d, related_item_ids: ids }))}
+                />
+              </div>
+              {data.content_type === "podcast" && (
+                <div>
+                  <label className="block text-sm font-medium text-verter-graphite">
+                    {t("podcast.episodeUrl")}
+                  </label>
+                  <input
+                    type="url"
+                    value={data.episode_url}
+                    onChange={(e) => setData((d) => ({ ...d, episode_url: e.target.value }))}
+                    placeholder="https://..."
+                    className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("podcast.publishedAt")}
+                </label>
+                <input
+                  type="date"
+                  value={data.published_at}
+                  onChange={(e) =>
+                    setData((d) => ({ ...d, published_at: e.target.value }))
+                  }
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <button
+              type="button"
+              onClick={() => handleSubmit(false)}
+              disabled={loading}
+              className={secondaryBtn}
+            >
+              {t("content.saveDraft")}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubmit(true)}
+              disabled={loading}
+              className={primaryBtn}
+            >
+              {t("content.publish")}
+            </button>
+            {mode === "edit" && initial?.status !== "archived" && (
+              <button
+                type="button"
+                onClick={handleArchive}
+                disabled={loading}
+                className="rounded-pill border border-verter-muted px-4 py-2 text-sm font-medium text-verter-muted hover:bg-verter-muted/10"
+              >
+                {t("archive")}
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
