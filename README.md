@@ -41,18 +41,26 @@ App redirects to `/fi` by default.
 - Node.js 20+
 - npm
 
-### Setup
+### Local setup
 
-```bash
-npm install
+1. Install deps and copy the example env file:
 
-cp .env.example .env.local
-# Edit .env.local with your values
+   ```bash
+   npm install
+   cp .env.example .env.local
+   ```
 
-npm run dev
-```
+2. Edit `.env.local` and fill in your Supabase values:
+   - `NEXT_PUBLIC_SUPABASE_URL` – from your Supabase project (Settings → API)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` – the publishable anon key
 
-Open [http://localhost:3000](http://localhost:3000) (redirects to `/fi`).
+3. Restart the dev server after changing env vars:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) (redirects to `/fi`).
 
 ---
 
