@@ -116,6 +116,7 @@
     "addCtaTitle": "Puuttuuko listalta?",
     "addCtaText": "Lisää oma tapahtuma tai leiri. Tarkistamme ja julkaisemme hyväksytyt ehdotukset.",
     "addCtaButton": "Lisää oma juoksujuttu",
+    "addEvent": "Lisää tapahtuma",
     "backToEvents": "← Takaisin tapahtumiin",
     "distanceFormat": "Matka / muoto",
     "elevation": "Nousu",
@@ -226,6 +227,9 @@
     "disclaimer": "Turvallisuus ja vastuuvapaus"
   },
   "submit": {
+    "eventPageTitle": "Lisää tapahtuma",
+    "eventPageDescription": "Täytä tapahtuman tiedot. Tarkistamme ehdotuksen ennen julkaisua.",
+    "backToEvents": "Takaisin tapahtumiin",
     "pageTitle": "Lisää oma tapahtuma, leiri tai reitti",
     "pageDescription": "Kaikki ehdotukset tarkistetaan ennen julkaisua. Lisää mahdollisimman selkeä virallinen linkki.",
     "approvalPrinciplesTitle": "Hyväksyntäperiaatteet",

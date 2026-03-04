@@ -118,6 +118,7 @@
     "addCtaTitle": "Missing from the list?",
     "addCtaText": "Submit your event or camp. We review all submissions before publishing.",
     "addCtaButton": "Submit your running item",
+    "addEvent": "Add event",
     "backToEvents": "← Back to events",
     "distanceFormat": "Distance / format",
     "elevation": "Elevation",
@@ -232,6 +233,9 @@
     "defaultDescription": "Find and filter runnable routes across Finland."
   },
   "submit": {
+    "eventPageTitle": "Submit event",
+    "eventPageDescription": "Fill in the event details. We review submissions before publishing.",
+    "backToEvents": "Back to events",
     "pageTitle": "Submit an event, camp or route",
     "pageDescription": "All submissions are reviewed before publishing. Please include an official link.",
     "approvalPrinciplesTitle": "Approval principles",
