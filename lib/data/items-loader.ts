@@ -41,6 +41,8 @@ export type EventsData = {
   items: (CampItem | EventItem)[];
   regions: string[];
   trainingTags: string[];
+  /** Set when Supabase fetch fails */
+  error?: string;
 };
 
 /** Fetch items from Supabase if available, else use static. Public lists show status=published only. */
@@ -58,12 +60,22 @@ export async function loadRoutesData(): Promise<RoutesData> {
   return { items: routeItems, regions, trainingTags, numericBounds };
 }
 
-/** Load only event+camp items for /events hub. */
+/** Load only event+camp items for /events hub. Fetches from Supabase items table (published only). */
 export async function loadEventsData(): Promise<EventsData> {
-  const items = await loadAllItems();
-  const eventItems = items.filter(
-    (i): i is CampItem | EventItem => i.type === "event" || i.type === "camp"
-  );
-  const { regions, trainingTags } = computeEventsDerived(eventItems);
-  return { items: eventItems, regions, trainingTags };
+  try {
+    const supabaseItems = await getPublishedItemsFromSupabase();
+    const items = supabaseItems.length > 0 ? supabaseItems : staticItems;
+    const eventItems = items.filter(
+      (i): i is CampItem | EventItem => i.type === "event" || i.type === "camp"
+    );
+    const { regions, trainingTags } = computeEventsDerived(eventItems);
+    return { items: eventItems, regions, trainingTags };
+  } catch {
+    return {
+      items: [],
+      regions: [],
+      trainingTags: [],
+      error: "load_error",
+    };
+  }
 }

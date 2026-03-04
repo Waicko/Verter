@@ -40,6 +40,8 @@ export interface CampItem extends VerterItemBase {
   duration?: string;
   focus?: string;
   elevation_gain_m?: number;
+  /** Official or registration URL for list display */
+  registration_url?: string;
 }
 
 /** Event item (race/competition or recurring run) */
@@ -47,6 +49,8 @@ export interface EventItem extends VerterItemBase {
   type: "event";
   date?: string;
   distance_or_format?: string;
+  /** Official or registration URL for list display */
+  registration_url?: string;
   /** Parsed distance in km for filtering; from distance_or_format */
   distance_km?: number;
   elevation_gain_m?: number;

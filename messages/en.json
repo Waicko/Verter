@@ -107,6 +107,8 @@
   },
   "events": {
     "title": "Events & Camps",
+    "loadError": "Unable to load events. Please try again later.",
+    "register": "Register",
     "description": "Trail races, camps and workshops.",
     "noResults": "No events or camps found with current filters.",
     "noResultsFilterHint": "Try clearing filters.",

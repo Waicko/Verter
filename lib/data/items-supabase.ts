@@ -45,6 +45,9 @@ function dbRowToItem(row: Record<string, unknown>): VerterItem {
     const duration = durationDays
       ? `${durationDays}-day${durationDays > 1 ? "s" : ""}`
       : (row.season as string) ?? undefined;
+    const registrationUrl = row.official_url
+      ? String(row.official_url)
+      : undefined;
     return {
       ...base,
       type: "camp",
@@ -53,6 +56,7 @@ function dbRowToItem(row: Record<string, unknown>): VerterItem {
       focus: row.focus ? String(row.focus) : undefined,
       elevation_gain_m:
         typeof row.elevation_gain_m === "number" ? row.elevation_gain_m : undefined,
+      registration_url: registrationUrl,
     } satisfies CampItem;
   }
 
@@ -68,6 +72,9 @@ function dbRowToItem(row: Record<string, unknown>): VerterItem {
           .join(", ")
       : null;
   const recurrence = row.recurrence ? String(row.recurrence) : "";
+  const registrationUrl = row.official_url
+    ? String(row.official_url)
+    : undefined;
   return {
     ...base,
     type: "event",
@@ -77,6 +84,7 @@ function dbRowToItem(row: Record<string, unknown>): VerterItem {
     elevation_gain_m:
       typeof row.elevation_gain_m === "number" ? row.elevation_gain_m : undefined,
     recurring: !!recurrence && recurrence.toLowerCase() !== "none",
+    registration_url: registrationUrl,
   } satisfies EventItem;
 }
 

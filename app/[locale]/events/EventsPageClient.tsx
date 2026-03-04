@@ -5,7 +5,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { CampItem, EventItem } from "@/lib/types";
-import ItemCard from "@/components/ItemCard";
+import EventListItem from "@/components/EventListItem";
 import EventsFilterBar from "@/components/EventsFilterBar";
 import AddListCta from "@/components/AddListCta";
 import EmptyState from "@/components/EmptyState";
@@ -119,6 +119,14 @@ export default function EventsPageClient({ data }: EventsPageClientProps) {
   return (
     <div className="px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
+        {data.error && (
+          <div
+            role="alert"
+            className="mb-6 rounded-card border border-verter-risky bg-verter-risky/10 px-4 py-3 text-sm text-verter-risky"
+          >
+            {t("loadError")}
+          </div>
+        )}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-heading text-3xl font-bold text-verter-graphite">
@@ -149,9 +157,9 @@ export default function EventsPageClient({ data }: EventsPageClientProps) {
           />
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 space-y-3">
           {filteredItems.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <EventListItem key={item.id} item={item} />
           ))}
         </div>
 

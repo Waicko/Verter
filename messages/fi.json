@@ -105,6 +105,8 @@
   },
   "events": {
     "title": "Tapahtumat & Leirit",
+    "loadError": "Tapahtumien lataus epäonnistui. Yritä myöhemmin uudelleen.",
+    "register": "Ilmoittaudu",
     "description": "Juoksukilpailut, -leirit ja -workshopit.",
     "noResults": "Tapahtumia tai leirejä ei löydy valituilla suodattimilla.",
     "noResultsFilterHint": "Kokeile tyhjentää suodattimia.",
