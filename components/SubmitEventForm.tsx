@@ -68,24 +68,25 @@ export default function SubmitEventForm() {
 
     try {
       const supabase = getSupabaseClient();
-      const { error: insertError } = await supabase.from("events").insert({
+      const payload = {
         title,
         date,
         location: data.location.trim() || null,
-        registration_url: data.registration_url.trim() || null,
         description: data.description.trim() || null,
+        registration_url: data.registration_url.trim() || null,
         status: "draft",
-      });
+      };
+      const { error: insertError } = await supabase.from("events").insert(payload);
 
       if (insertError) {
-        setError(ERROR_MESSAGE);
+        setError(insertError.message ?? ERROR_MESSAGE);
         return;
       }
 
       setSuccess(true);
       setData(INITIAL);
-    } catch {
-      setError(ERROR_MESSAGE);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : ERROR_MESSAGE);
     } finally {
       setLoading(false);
     }
