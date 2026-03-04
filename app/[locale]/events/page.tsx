@@ -61,30 +61,17 @@ export default async function EventsPage({ params }: Props) {
   const { error, rows } = await fetchEvents();
   const events = rows ?? [];
 
-  const count = events.length;
-  const titles = events.map((r) => String(r.title ?? (r as Record<string, unknown>).id ?? "—"));
-
   return (
     <div className="px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
-        {/* Debug block */}
-        <div className="mb-8">
-          <div className="rounded-card border border-amber-300 bg-amber-50 p-4 font-mono text-sm">
-            <p className="font-semibold text-amber-800">
-              {error ? `Error: ${error}` : "Supabase ok"}
-            </p>
-            <p className="mt-1 text-amber-700">Rows: {count}</p>
-            <p className="mt-1 text-amber-700">Rendered events: {events.length}</p>
-            {titles.length > 0 && (
-              <ul className="mt-2 list-inside list-disc text-amber-800">
-                {titles.map((title, i) => (
-                  <li key={i}>{title}</li>
-                ))}
-              </ul>
-            )}
+        {error && (
+          <div
+            role="alert"
+            className="mb-6 rounded-card border border-verter-risky bg-verter-risky/10 px-4 py-3 text-sm text-verter-risky"
+          >
+            {t("loadError")}
           </div>
-        </div>
-
+        )}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-heading text-3xl font-bold text-verter-graphite">
