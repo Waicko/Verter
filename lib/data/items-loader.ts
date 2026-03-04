@@ -60,12 +60,11 @@ export async function loadRoutesData(): Promise<RoutesData> {
   return { items: routeItems, regions, trainingTags, numericBounds };
 }
 
-/** Load only event+camp items for /events hub. Fetches from Supabase items table (published only). */
+/** Load only event+camp items for /events hub. Supabase only (no static fallback). */
 export async function loadEventsData(): Promise<EventsData> {
   try {
     const supabaseItems = await getPublishedItemsFromSupabase();
-    const items = supabaseItems.length > 0 ? supabaseItems : staticItems;
-    const eventItems = items.filter(
+    const eventItems = supabaseItems.filter(
       (i): i is CampItem | EventItem => i.type === "event" || i.type === "camp"
     );
     const { regions, trainingTags } = computeEventsDerived(eventItems);
