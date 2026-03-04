@@ -62,6 +62,12 @@ export default async function AdminLayout({ children, params }: Props) {
             {t("navSubmissions")}
           </Link>
           <Link
+            href="/admin/events"
+            className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
+          >
+            {t("navEvents")}
+          </Link>
+          <Link
             href="/"
             className="ml-auto text-sm font-medium text-verter-muted hover:text-verter-graphite"
           >
