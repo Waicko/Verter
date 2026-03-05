@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 
 const TOKEN_KEY = "admin_events_token";
@@ -30,12 +31,21 @@ function getApiUrl(path: string): string {
 }
 
 export default function AdminEventsClient() {
+  const searchParams = useSearchParams();
   const [token, setTokenState] = useState("");
   const [tokenInput, setTokenInput] = useState("");
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSuccessMessage(
+      searchParams.get("updated") === "1" ? "Tapahtuma päivitetty." : null
+    );
+  }, [searchParams]);
 
   useEffect(() => {
     setTokenState(getToken());
@@ -99,6 +109,30 @@ export default function AdminEventsClient() {
       fetchEvents(t);
     } catch {
       setError("Julkaisu epäonnistui.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const t = getToken();
+    if (!t) return;
+    setActionLoading(id);
+    try {
+      const res = await fetch(getApiUrl("/delete"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": t },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Poisto epäonnistui.");
+        return;
+      }
+      setDeleteConfirmId(null);
+      fetchEvents(t);
+    } catch {
+      setError("Poisto epäonnistui.");
     } finally {
       setActionLoading(null);
     }
@@ -176,6 +210,14 @@ export default function AdminEventsClient() {
         </Link>
       </div>
 
+      {successMessage && (
+        <div
+          role="status"
+          className="rounded-card border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+        >
+          {successMessage}
+        </div>
+      )}
       {error && (
         <div
           role="alert"
@@ -244,7 +286,13 @@ export default function AdminEventsClient() {
                       </a>
                     )}
                   </div>
-                  <div className="flex shrink-0 gap-2">
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <Link
+                      href={`/admin/events/edit/${ev.id}`}
+                      className="rounded-card border border-verter-border bg-white px-3 py-1.5 text-sm font-medium text-verter-graphite hover:bg-verter-snow"
+                    >
+                      Muokkaa
+                    </Link>
                     {isPublished ? (
                       <button
                         type="button"
@@ -262,6 +310,36 @@ export default function AdminEventsClient() {
                         className="rounded-card border border-verter-forest bg-verter-forest px-3 py-1.5 text-sm font-medium text-white hover:opacity-95 disabled:opacity-50"
                       >
                         {actionLoading === ev.id ? "…" : "Julkaise"}
+                      </button>
+                    )}
+                    {deleteConfirmId === ev.id ? (
+                      <div className="flex items-center gap-2 rounded-card border border-verter-risky bg-white px-3 py-1.5">
+                        <span className="text-sm text-verter-graphite">
+                          Poistetaanko tapahtuma?
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(ev.id)}
+                          disabled={actionLoading !== null}
+                          className="text-sm font-medium text-verter-risky hover:underline disabled:opacity-50"
+                        >
+                          Poista
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="text-sm font-medium text-verter-graphite hover:underline"
+                        >
+                          Peruuta
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmId(ev.id)}
+                        className="rounded-card border border-verter-border bg-white px-3 py-1.5 text-sm font-medium text-verter-risky hover:bg-red-50"
+                      >
+                        Poista
                       </button>
                     )}
                   </div>
