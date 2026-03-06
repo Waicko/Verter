@@ -13,10 +13,20 @@ export type DbRoute = {
   created_at: string;
 };
 
+/**
+ * Returns the public URL for a GPX file in the gpx bucket.
+ * Uses Supabase's getPublicUrl so the format always matches the actual storage path.
+ * gpx_path must be the object path within the bucket (no "gpx/" prefix).
+ */
 export function getGpxDownloadUrl(gpxPath: string): string {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) return "";
-  return `${url}/storage/v1/object/public/gpx/${gpxPath}`;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey || !gpxPath?.trim()) return "";
+  const path = gpxPath.replace(/^gpx\/+/, "").replace(/^\/+/, "").trim();
+  if (!path) return "";
+  const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
+  const { data } = supabase.storage.from("gpx").getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export async function getPublishedRoutes(): Promise<DbRoute[]> {
