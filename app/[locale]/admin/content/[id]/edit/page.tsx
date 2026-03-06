@@ -2,7 +2,6 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import ContentItemForm from "@/components/admin/ContentItemForm";
-import { getItemsForContentPicker } from "@/lib/data/items-supabase";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
 
@@ -11,12 +10,12 @@ export default async function EditContentPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("admin");
   const supabase = getSupabaseServerClient();
-  const [itemResult, items] = await Promise.all([
-    supabase.from("content_items").select("*").eq("id", id).single(),
-    getItemsForContentPicker(),
-  ]);
+  const { data: item, error } = await supabase
+    .from("content_items")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  const { data: item, error } = itemResult;
   if (error || !item) {
     notFound();
   }
@@ -28,7 +27,7 @@ export default async function EditContentPage({ params }: Props) {
       </h1>
       <p className="mt-2 text-verter-muted">{item.status}</p>
       <div className="mt-8">
-        <ContentItemForm initial={item} locale={locale} mode="edit" items={items} />
+        <ContentItemForm initial={item} locale={locale} mode="edit" />
       </div>
     </div>
   );

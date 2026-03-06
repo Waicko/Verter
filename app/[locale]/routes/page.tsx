@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import { loadRoutesData } from "@/lib/data/items-loader";
+import { loadRoutesData } from "@/lib/data/routes-loader";
 import RoutesPageClient from "./RoutesPageClient";
 
 type Props = {

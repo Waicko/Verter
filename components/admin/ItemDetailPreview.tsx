@@ -3,11 +3,10 @@
 import { useTranslations } from "next-intl";
 import { formatDistance, formatElevation } from "@/lib/utils";
 import RatingDisplay from "@/components/RatingDisplay";
-import type { DbItem } from "@/lib/db/types";
 import type { RouteRatingAggregate } from "@/lib/types";
 
 interface ItemDetailPreviewProps {
-  item: DbItem | Record<string, unknown>;
+  item: Record<string, unknown>;
 }
 
 export function RouteDetailPreview({ item }: { item: Record<string, unknown> }) {

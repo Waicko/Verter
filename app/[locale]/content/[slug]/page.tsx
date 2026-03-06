@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import ReactMarkdown from "react-markdown";
 import { getContentBySlug } from "@/lib/data/content-items";
-import { getPublishedItemsByIds } from "@/lib/data/items-supabase";
-import ItemCard from "@/components/ItemCard";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -32,10 +30,6 @@ export default async function ContentDetailPage({ params }: Props) {
 
   const item = await getContentBySlug(slug);
   if (!item) notFound();
-
-  const relatedItems = item.related_item_ids?.length
-    ? await getPublishedItemsByIds(item.related_item_ids)
-    : [];
 
   const typeLabels: Record<string, string> = {
     blog: t("blog"),
@@ -101,19 +95,6 @@ export default async function ContentDetailPage({ params }: Props) {
             </a>
           )}
         </div>
-
-        {relatedItems.length > 0 && (
-          <section className="mt-12 border-t border-verter-border pt-12">
-            <h2 className="font-heading text-xl font-semibold text-verter-graphite">
-              {t("related")}
-            </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {relatedItems.map((rel) => (
-                <ItemCard key={rel.id} item={rel} />
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </article>
   );

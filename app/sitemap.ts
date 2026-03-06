@@ -1,11 +1,15 @@
 import type { MetadataRoute } from "next";
-import { routesWithDensity } from "@/lib/data/routes";
-import { contentItems } from "@/lib/data/content";
+import { getPublishedRoutes } from "@/lib/data/routes-db";
+import { getPublishedContentItems } from "@/lib/data/content-items";
 
 const locales = ["fi", "en"] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://verter.fi";
+  const [routes, contentItems] = await Promise.all([
+    getPublishedRoutes(),
+    getPublishedContentItems(),
+  ]);
 
   const staticPaths = ["", "/routes", "/content", "/leirit", "/camps", "/about"];
   const staticPages: MetadataRoute.Sitemap = locales.flatMap((locale) =>
@@ -18,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   );
 
   const routePages: MetadataRoute.Sitemap = locales.flatMap((locale) =>
-    routesWithDensity.map((route) => ({
+    routes.map((route) => ({
       url: `${baseUrl}/${locale}/routes/${route.slug}`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,

@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import RouteCard from "@/components/RouteCard";
 import ContentCard from "@/components/ContentCard";
 import TeamMemberCard from "@/components/TeamMemberCard";
-import { routesWithDensity } from "@/lib/data/routes";
+import { getPublishedRoutes } from "@/lib/data/routes-db";
 import { getPublishedContentItems } from "@/lib/data/content-items";
 import { getPublishedTeamMembers } from "@/lib/data/team";
 import { primaryBtn, secondaryBtn } from "@/lib/styles";
@@ -18,11 +18,12 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("home");
-  const [teamMembers, contentItems] = await Promise.all([
+  const [routes, teamMembers, contentItems] = await Promise.all([
+    getPublishedRoutes(),
     getPublishedTeamMembers(locale as "fi" | "en"),
     getPublishedContentItems(),
   ]);
-  const featuredRoutes = routesWithDensity.slice(0, 3);
+  const featuredRoutes = routes.slice(0, 3);
   const latestContent = contentItems.slice(0, 3);
 
   return (

@@ -1,6 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import ContentItemForm from "@/components/admin/ContentItemForm";
-import { getItemsForContentPicker } from "@/lib/data/items-supabase";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -12,7 +11,6 @@ export default async function NewContentPage({ params, searchParams }: Props) {
   const sp = await searchParams as { type?: string };
   setRequestLocale(locale);
   const t = await getTranslations("admin");
-  const items = await getItemsForContentPicker();
 
   const initialType =
     sp.type === "blog" || sp.type === "review" || sp.type === "podcast" || sp.type === "comparison"
@@ -30,7 +28,6 @@ export default async function NewContentPage({ params, searchParams }: Props) {
           initial={{ content_type: initialType }}
           locale={locale}
           mode="create"
-          items={items}
         />
       </div>
     </div>

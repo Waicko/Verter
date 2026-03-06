@@ -9,7 +9,7 @@ import RouteFilterBar from "@/components/RouteFilterBar";
 import AddListCta from "@/components/AddListCta";
 import EmptyState from "@/components/EmptyState";
 import type { DistanceRange, ElevationRange } from "@/components/FilterBar";
-import type { RoutesData } from "@/lib/data/items-loader";
+import type { RoutesData } from "@/lib/data/routes-loader";
 import type { DbRoute } from "@/lib/data/routes-db";
 import { getGpxDownloadUrl } from "@/lib/data/routes-db";
 

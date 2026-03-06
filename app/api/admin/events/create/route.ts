@@ -36,8 +36,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const slug = slugify(title);
   const payload = {
     title,
+    slug,
     date,
     location: body.location?.trim() || null,
     registration_url: body.registration_url?.trim() || null,
@@ -57,4 +59,13 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ id: data.id });
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[åä]/g, "a")
+    .replace(/ö/g, "o")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }

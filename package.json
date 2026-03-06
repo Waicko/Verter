@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "tsx scripts/seed-items.ts"
+    "seed": "echo 'Seed script removed. Use Supabase dashboard or migrations to add data.'"
   },
   "dependencies": {
     "@mapbox/togeojson": "^0.16.2",

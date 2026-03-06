@@ -13,6 +13,7 @@ type Props = {
 type EventRow = {
   id?: string;
   title?: string;
+  slug?: string | null;
   date?: string;
   location?: string;
   registration_url?: string;
@@ -45,7 +46,8 @@ async function fetchEvents(): Promise<{ error: string | null; rows: EventRow[] }
   const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
   const { data: rows, error } = await supabase
     .from("events")
-    .select("*")
+    .select("id, title, slug, date, location, registration_url, description")
+    .eq("status", "published")
     .order("date", { ascending: true });
   if (error) {
     return { error: error.message, rows: [] };
@@ -91,14 +93,22 @@ export default async function EventsPage({ params }: Props) {
           <EmptyState namespace="events" hasActiveFilters={false} />
         ) : (
           <div className="mt-8 space-y-3">
-            {events.map((ev, i) => (
+            {events.map((ev, i) => {
+              const detailHref = (ev.slug ? `/events/${ev.slug}` : ev.id ? `/events/${ev.id}` : null);
+              return (
               <div
                 key={ev.id ?? i}
                 className="rounded-card border border-verter-border bg-white/70 p-4"
               >
-                <h3 className="font-heading font-semibold text-verter-graphite">
-                  {ev.title ?? "—"}
-                </h3>
+                {detailHref ? (
+                  <Link href={detailHref} className="font-heading font-semibold text-verter-graphite hover:text-verter-forest">
+                    {ev.title ?? "—"}
+                  </Link>
+                ) : (
+                  <h3 className="font-heading font-semibold text-verter-graphite">
+                    {ev.title ?? "—"}
+                  </h3>
+                )}
                 <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-verter-muted">
                   {ev.date && <span>{String(ev.date)}</span>}
                   {ev.location && <span>{ev.location}</span>}
@@ -117,7 +127,8 @@ export default async function EventsPage({ params }: Props) {
                   </a>
                 )}
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
 

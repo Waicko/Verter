@@ -6,8 +6,6 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import type { DbContentItem, DbContentItemInsert } from "@/lib/db/content-types";
-import type { ItemPickerOption } from "@/lib/data/items-supabase";
-import RelatedItemsPicker from "@/components/admin/RelatedItemsPicker";
 import { cardClass, primaryBtn, secondaryBtn } from "@/lib/styles";
 
 type ContentType = "blog" | "review" | "podcast" | "comparison";
@@ -29,7 +27,6 @@ interface ContentItemFormProps {
   initial?: Partial<DbContentItem> | null;
   locale: string;
   mode: "create" | "edit";
-  items?: ItemPickerOption[];
 }
 
 function slugify(s: string): string {
@@ -45,7 +42,6 @@ export default function ContentItemForm({
   initial,
   locale,
   mode,
-  items = [],
 }: ContentItemFormProps) {
   const t = useTranslations("admin");
   const tContent = useTranslations("content");
@@ -304,16 +300,6 @@ export default function ContentItemForm({
                   onChange={(e) => setData((d) => ({ ...d, hero_image: e.target.value }))}
                   placeholder="https://..."
                   className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-verter-graphite">
-                  {t("content.relatedItemIds")}
-                </label>
-                <RelatedItemsPicker
-                  items={items}
-                  selectedIds={data.related_item_ids}
-                  onChange={(ids) => setData((d) => ({ ...d, related_item_ids: ids }))}
                 />
               </div>
               {data.content_type === "podcast" && (
