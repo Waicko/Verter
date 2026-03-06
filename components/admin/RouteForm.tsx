@@ -62,10 +62,16 @@ export default function RouteForm({
   const [formState, setFormState] = useState<RouteFormData>(data);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [gpxUploading, setGpxUploading] = useState(false);
+  const [gpxUploadStatus, setGpxUploadStatus] = useState<
+    "idle" | "uploading" | "success" | "failed"
+  >("idle");
+  const [gpxUploadMessage, setGpxUploadMessage] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setFormState({ ...emptyData, ...initialData } as RouteFormData);
+    setGpxUploadStatus("idle");
+    setGpxUploadMessage("");
   }, [initialData]);
 
   const update = (k: keyof RouteFormData, v: string) => {
@@ -82,15 +88,24 @@ export default function RouteForm({
     const file = e.target.files?.[0];
     if (!file || !file.name.toLowerCase().endsWith(".gpx")) {
       setValidationError("Valitse .gpx-tiedosto.");
+      setGpxUploadStatus("idle");
       return;
     }
     setValidationError(null);
     setGpxUploading(true);
+    setGpxUploadStatus("uploading");
+    setGpxUploadMessage("Uploading...");
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("admin_routes_token") ?? ""
           : "";
+      if (!token) {
+        setGpxUploadStatus("failed");
+        setGpxUploadMessage("Upload failed: Admin token missing. Enter token on routes list page.");
+        setValidationError("Admin-tunnus puuttuu. Syötä tunnus reittilistalla.");
+        return;
+      }
       const formData = new FormData();
       formData.append("gpx", file);
       const res = await fetch("/api/admin/routes/upload", {
@@ -99,13 +114,32 @@ export default function RouteForm({
         body: formData,
       });
       const json = await res.json().catch(() => ({}));
+      // eslint-disable-next-line no-console
+      console.log("[RouteForm] Upload response:", { status: res.status, json });
+
       if (!res.ok) {
-        setValidationError(json.error ?? "GPX-lataus epäonnistui.");
+        const errMsg = json.error ?? `HTTP ${res.status}`;
+        setGpxUploadStatus("failed");
+        setGpxUploadMessage(`Upload failed: ${errMsg}`);
+        setValidationError(errMsg);
         return;
       }
-      setFormState((prev) => ({ ...prev, gpx_path: json.path }));
-    } catch {
-      setValidationError("GPX-lataus epäonnistui.");
+
+      const path = json.path;
+      if (path && typeof path === "string") {
+        setFormState((prev) => ({ ...prev, gpx_path: path }));
+        setGpxUploadStatus("success");
+        setGpxUploadMessage(`Upload succeeded. Path: ${path}`);
+      } else {
+        setGpxUploadStatus("failed");
+        setGpxUploadMessage(`Upload failed: API returned no path. Response: ${JSON.stringify(json)}`);
+        setValidationError("Lataus onnistui mutta polku puuttui vastauksesta.");
+      }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
+      setGpxUploadStatus("failed");
+      setGpxUploadMessage(`Upload failed: ${errMsg}`);
+      setValidationError(`GPX-lataus epäonnistui: ${errMsg}`);
     } finally {
       setGpxUploading(false);
       e.target.value = "";
@@ -310,11 +344,27 @@ export default function RouteForm({
           >
             {gpxUploading ? "Ladataan…" : "Valitse GPX"}
           </button>
+          {gpxUploadStatus === "uploading" && (
+            <span className="text-sm text-verter-muted">Uploading...</span>
+          )}
+          {gpxUploadStatus === "success" && (
+            <span className="text-sm font-medium text-green-600">
+              Upload succeeded: {formState.gpx_path}
+            </span>
+          )}
+          {gpxUploadStatus === "failed" && (
+            <span className="text-sm font-medium text-verter-risky">
+              {gpxUploadMessage}
+            </span>
+          )}
           {formState.gpx_path && (
             <span className="text-sm text-verter-muted">
               ✓ {formState.gpx_path}
             </span>
           )}
+        </div>
+        <div className="mt-2 rounded-card border border-verter-border bg-verter-snow/50 px-3 py-2 font-mono text-xs text-verter-muted">
+          gpx_path (debug): {formState.gpx_path || "(empty)"}
         </div>
       </div>
 

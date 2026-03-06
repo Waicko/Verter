@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
-const GPX_BUCKET = "gpx";
+const GPX_BUCKET = "gpx"; // Must match Supabase Storage bucket name exactly
 
 function checkAuth(request: NextRequest): boolean {
   const token = request.headers.get("x-admin-token");
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   const file = formData.get("gpx") as File | null;
-  if (!file || !(file instanceof File)) {
+  if (!file || typeof (file as Blob).arrayBuffer !== "function") {
     return NextResponse.json(
       { error: "GPX file is required (field: gpx)" },
       { status: 400 }
@@ -33,16 +33,28 @@ export async function POST(request: NextRequest) {
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
   const path = `${Date.now()}-${safeName}${ext}`;
 
+  // Convert to ArrayBuffer for Node.js/serverless compatibility (File from FormData may not work)
+  const arrayBuffer = await file.arrayBuffer();
+
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.storage
     .from(GPX_BUCKET)
-    .upload(path, file, {
+    .upload(path, arrayBuffer, {
       contentType: file.type || "application/gpx+xml",
       upsert: true,
     });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errorMsg = error.message || String(error);
+    console.error("[routes/upload] Supabase storage error:", {
+      message: errorMsg,
+      bucket: GPX_BUCKET,
+      path,
+    });
+    return NextResponse.json(
+      { error: `Storage upload failed: ${errorMsg}` },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ path: data.path });
