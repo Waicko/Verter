@@ -25,14 +25,13 @@ const emptyData: RouteFormData = {
   gpx_path: "",
 };
 
-function slugify(s: string): string {
-  return s
-    .trim()
+function slugify(text: string): string {
+  return text
     .toLowerCase()
-    .replace(/[äå]/g, "a")
-    .replace(/[ö]/g, "o")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 }
 
 interface RouteFormProps {
@@ -60,6 +59,7 @@ export default function RouteForm({
   };
 
   const [formState, setFormState] = useState<RouteFormData>(data);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [gpxUploading, setGpxUploading] = useState(false);
   const [gpxUploadStatus, setGpxUploadStatus] = useState<
@@ -70,6 +70,7 @@ export default function RouteForm({
 
   useEffect(() => {
     setFormState({ ...emptyData, ...initialData } as RouteFormData);
+    setSlugManuallyEdited(false);
     setGpxUploadStatus("idle");
     setGpxUploadMessage("");
   }, [initialData]);
@@ -77,11 +78,16 @@ export default function RouteForm({
   const update = (k: keyof RouteFormData, v: string) => {
     setFormState((prev) => {
       const next = { ...prev, [k]: v };
-      if (k === "title" && !prev.slug) {
+      if (k === "title" && !slugManuallyEdited) {
         next.slug = slugify(v);
       }
       return next;
     });
+  };
+
+  const updateSlug = (v: string) => {
+    setSlugManuallyEdited(true);
+    update("slug", v);
   };
 
   const handleGpxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +104,7 @@ export default function RouteForm({
     try {
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("admin_routes_token") ?? ""
+          ? localStorage.getItem("admin_token") ?? ""
           : "";
       if (!token) {
         setGpxUploadStatus("failed");
@@ -114,8 +120,6 @@ export default function RouteForm({
         body: formData,
       });
       const json = await res.json().catch(() => ({}));
-      // eslint-disable-next-line no-console
-      console.log("[RouteForm] Upload response:", { status: res.status, json });
 
       if (!res.ok) {
         const errMsg = json.error ?? `HTTP ${res.status}`;
@@ -127,7 +131,14 @@ export default function RouteForm({
 
       const path = json.path;
       if (path && typeof path === "string") {
-        setFormState((prev) => ({ ...prev, gpx_path: path }));
+        const updates: Partial<RouteFormData> = { gpx_path: path };
+        if (json.distance_km != null) {
+          updates.distance_km = String(json.distance_km);
+        }
+        if (json.ascent_m !== undefined) {
+          updates.ascent_m = json.ascent_m == null ? "" : String(json.ascent_m);
+        }
+        setFormState((prev) => ({ ...prev, ...updates }));
         setGpxUploadStatus("success");
         setGpxUploadMessage(`Upload succeeded. Path: ${path}`);
       } else {
@@ -202,6 +213,23 @@ export default function RouteForm({
 
       <div>
         <label
+          htmlFor="slug"
+          className="block text-sm font-medium text-verter-graphite"
+        >
+          Slug
+        </label>
+        <input
+          id="slug"
+          type="text"
+          value={formState.slug}
+          onChange={(e) => updateSlug(e.target.value)}
+          className={inputClass}
+          placeholder="nuuksio-trail-loop"
+        />
+      </div>
+
+      <div>
+        <label
           htmlFor="area"
           className="block text-sm font-medium text-verter-graphite"
         >
@@ -217,42 +245,47 @@ export default function RouteForm({
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label
-            htmlFor="distance_km"
-            className="block text-sm font-medium text-verter-graphite"
-          >
-            Matka (km)
-          </label>
-          <input
-            id="distance_km"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formState.distance_km}
-            onChange={(e) => update("distance_km", e.target.value)}
-            className={inputClass}
-            placeholder="10"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="ascent_m"
-            className="block text-sm font-medium text-verter-graphite"
-          >
-            Nousu (m)
-          </label>
-          <input
-            id="ascent_m"
-            type="number"
-            step="1"
-            min="0"
-            value={formState.ascent_m}
-            onChange={(e) => update("ascent_m", e.target.value)}
-            className={inputClass}
-            placeholder="150"
-          />
+      <div className="space-y-2">
+        <p className="text-xs text-verter-muted">
+          Lasketaan automaattisesti GPX-tiedostosta
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="distance_km"
+              className="block text-sm font-medium text-verter-graphite"
+            >
+              Matka (km)
+            </label>
+            <input
+              id="distance_km"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formState.distance_km}
+              onChange={(e) => update("distance_km", e.target.value)}
+              className={inputClass}
+              placeholder="10"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="ascent_m"
+              className="block text-sm font-medium text-verter-graphite"
+            >
+              Nousu (m)
+            </label>
+            <input
+              id="ascent_m"
+              type="number"
+              step="1"
+              min="0"
+              value={formState.ascent_m}
+              onChange={(e) => update("ascent_m", e.target.value)}
+              className={inputClass}
+              placeholder="150"
+            />
+          </div>
         </div>
       </div>
 
@@ -270,23 +303,6 @@ export default function RouteForm({
           rows={4}
           className={inputClass}
           placeholder="Lyhyt kuvaus reitistä"
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor="slug"
-          className="block text-sm font-medium text-verter-graphite"
-        >
-          Slug
-        </label>
-        <input
-          id="slug"
-          type="text"
-          value={formState.slug}
-          onChange={(e) => update("slug", e.target.value)}
-          className={inputClass}
-          placeholder="nuuksion-lenkki"
         />
       </div>
 

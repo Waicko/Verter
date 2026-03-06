@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { getGpxDownloadUrl } from "@/lib/data/routes-db";
 
-const TOKEN_KEY = "admin_routes_token";
+const TOKEN_KEY = "admin_token";
 
 type RouteRow = {
   id: string;
@@ -28,6 +28,11 @@ function getToken(): string {
 function setToken(token: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, token);
+}
+
+function clearToken() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 function getApiUrl(path: string): string {
@@ -66,7 +71,9 @@ export default function AdminRoutesClient() {
       });
       if (!res.ok) {
         if (res.status === 401) {
-          setError("Virheellinen tunnus. Tarkista ADMIN_TOKEN.");
+          clearToken();
+          setTokenState("");
+          setError("Virheellinen admin token");
           return;
         }
         const data = await res.json().catch(() => ({}));
@@ -97,6 +104,12 @@ export default function AdminRoutesClient() {
     fetchRoutes(t);
   };
 
+  const clearTokenAndShowError = () => {
+    clearToken();
+    setTokenState("");
+    setError("Virheellinen admin token");
+  };
+
   const handlePublish = async (id: string) => {
     const t = getToken();
     if (!t) return;
@@ -108,6 +121,10 @@ export default function AdminRoutesClient() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          clearTokenAndShowError();
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Julkaisu epäonnistui.");
         return;
@@ -132,6 +149,10 @@ export default function AdminRoutesClient() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          clearTokenAndShowError();
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Poisto epäonnistui.");
         return;
@@ -157,6 +178,10 @@ export default function AdminRoutesClient() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          clearTokenAndShowError();
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Palautus epäonnistui.");
         return;
@@ -249,14 +274,22 @@ export default function AdminRoutesClient() {
             const cardClass = isPublished
               ? "rounded-card border-2 border-green-200 bg-green-50 p-4"
               : "rounded-card border-2 border-orange-200 bg-orange-50 p-4";
+            const metaParts = [
+              r.area,
+              r.distance_km != null ? `${r.distance_km} km` : null,
+              r.ascent_m != null ? `+${r.ascent_m} m` : null,
+            ].filter(Boolean);
             return (
               <div key={r.id} className={cardClass}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-heading font-semibold text-verter-graphite">
-                        {r.title ?? "—"}
-                      </h3>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-heading font-semibold text-verter-graphite">
+                      {r.title ?? "—"}
+                    </h3>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-verter-muted">
+                      {metaParts.length > 0 ? metaParts.join(" · ") : "—"}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
                         className={`rounded-pill px-2.5 py-0.5 text-xs font-medium ${
                           isPublished
@@ -266,54 +299,32 @@ export default function AdminRoutesClient() {
                       >
                         {isPublished ? "Julkaistu" : "Luonnos"}
                       </span>
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-verter-muted">
-                      {r.area && <span>{r.area}</span>}
-                      {r.distance_km != null && (
-                        <span>{r.distance_km} km</span>
-                      )}
-                      {r.ascent_m != null && (
-                        <span>+{r.ascent_m} m</span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       {r.gpx_path ? (
                         <>
                           <span className="rounded-pill bg-verter-forest/20 px-2.5 py-0.5 text-xs font-medium text-verter-forest">
-                            GPX
-                          </span>
-                          <span className="text-sm text-verter-muted">
-                            {r.gpx_path.split("/").pop() ?? r.gpx_path}
+                            GPX ✓
                           </span>
                           <a
                             href={getGpxDownloadUrl(r.gpx_path)}
                             download
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm font-medium text-verter-forest hover:underline"
+                            className="text-xs font-medium text-verter-forest hover:underline"
                           >
-                            Lataa GPX
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                              />
-                            </svg>
+                            Lataa
                           </a>
                         </>
                       ) : (
-                        <span className="text-sm text-verter-muted">
-                          Ei GPX-tiedostoa
+                        <span className="rounded-pill border border-verter-border bg-verter-snow px-2.5 py-0.5 text-xs font-medium text-verter-muted">
+                          Ei GPX
                         </span>
                       )}
                     </div>
+                    {r.slug && (
+                      <p className="mt-1 font-mono text-xs text-verter-muted">
+                        /{r.slug}
+                      </p>
+                    )}
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
                     <Link

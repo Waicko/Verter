@@ -85,7 +85,9 @@
     "gpxRoutes": "Reitit GPX-tiedostoilla",
     "gpxRoutesDescription": "Reitit, joilla on ladattava GPX-tiedosto.",
     "viewDetails": "Näytä tiedot",
-    "downloadGpx": "Lataa GPX"
+    "downloadGpx": "Lataa GPX",
+    "elevationProfile": "Korkeusprofiili",
+    "noGpxAvailable": "Reitille ei ole GPX-tiedostoa."
   },
   "winter": {
     "good": "Hyvä",
@@ -330,6 +332,7 @@
     "navSubmissions": "Ehdotukset",
     "navEvents": "Tapahtumat",
     "navRoutes": "Reitit",
+    "logout": "Kirjaudu ulos",
     "backToSite": "← Takaisin sivustolle",
     "editPrefix": "Muokkaa",
     "showPreview": "Esikatsele",

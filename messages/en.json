@@ -87,7 +87,9 @@
     "gpxRoutes": "Routes with GPX",
     "gpxRoutesDescription": "Routes with downloadable GPX files.",
     "viewDetails": "View details",
-    "downloadGpx": "Download GPX"
+    "downloadGpx": "Download GPX",
+    "elevationProfile": "Elevation profile",
+    "noGpxAvailable": "No GPX available for this route."
   },
   "winter": {
     "good": "Good",
@@ -331,6 +333,7 @@
     "navSubmissions": "Submissions",
     "navEvents": "Events",
     "navRoutes": "Routes",
+    "logout": "Log out",
     "backToSite": "← Back to site",
     "editPrefix": "Edit",
     "showPreview": "Preview",

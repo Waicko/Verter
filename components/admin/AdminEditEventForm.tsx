@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import EventForm, { type EventFormData } from "./EventForm";
 
-const TOKEN_KEY = "admin_events_token";
+const TOKEN_KEY = "admin_token";
 
 function getToken(): string {
   if (typeof window === "undefined") return "";

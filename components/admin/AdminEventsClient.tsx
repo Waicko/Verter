@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 
-const TOKEN_KEY = "admin_events_token";
+const TOKEN_KEY = "admin_token";
 
 type EventRow = {
   id: string;
@@ -24,6 +24,11 @@ function getToken(): string {
 function setToken(token: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, token);
+}
+
+function clearToken() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 function getApiUrl(path: string): string {
@@ -60,7 +65,9 @@ export default function AdminEventsClient() {
       });
       if (!res.ok) {
         if (res.status === 401) {
-          setError("Virheellinen tunnus. Tarkista ADMIN_TOKEN.");
+          clearToken();
+          setTokenState("");
+          setError("Virheellinen admin token");
           return;
         }
         const data = await res.json().catch(() => ({}));
@@ -91,6 +98,12 @@ export default function AdminEventsClient() {
     fetchEvents(t);
   };
 
+  const clearTokenAndShowError = () => {
+    clearToken();
+    setTokenState("");
+    setError("Virheellinen admin token");
+  };
+
   const handlePublish = async (id: string) => {
     const t = getToken();
     if (!t) return;
@@ -102,6 +115,10 @@ export default function AdminEventsClient() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          clearTokenAndShowError();
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Julkaisu epäonnistui.");
         return;
@@ -125,6 +142,10 @@ export default function AdminEventsClient() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          clearTokenAndShowError();
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Poisto epäonnistui.");
         return;
@@ -149,6 +170,10 @@ export default function AdminEventsClient() {
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          clearTokenAndShowError();
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Palautus epäonnistui.");
         return;

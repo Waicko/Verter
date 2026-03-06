@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import "leaflet/dist/leaflet.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
 
 :root {
   --bg: #f6f7f4;

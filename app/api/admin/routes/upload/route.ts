@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { calculateGpxStats } from "@/lib/route-gpx-stats";
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
 const GPX_BUCKET = "gpx"; // Must match Supabase Storage bucket name exactly
@@ -57,5 +58,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ path: data.path });
+  // Parse GPX and calculate distance/ascent for form prefilling
+  let distance_km: number | undefined;
+  let ascent_m: number | null | undefined;
+  try {
+    const xmlText = new TextDecoder().decode(arrayBuffer);
+    const stats = calculateGpxStats(xmlText);
+    if (stats) {
+      distance_km = stats.distance_km;
+      ascent_m = stats.ascent_m; // null when GPX has no elevation data
+    }
+  } catch (parseErr) {
+    console.warn("[routes/upload] GPX stats parse failed:", parseErr);
+  }
+
+  const payload: {
+    path: string;
+    distance_km?: number;
+    ascent_m?: number | null;
+  } = { path: data.path };
+  if (distance_km != null) payload.distance_km = distance_km;
+  if (ascent_m !== undefined) payload.ascent_m = ascent_m; // include null so client clears field
+  return NextResponse.json(payload);
 }
