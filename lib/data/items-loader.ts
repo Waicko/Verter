@@ -1,6 +1,7 @@
 import type { VerterItem, RouteItem, CampItem, EventItem } from "@/lib/types";
 import { items as staticItems } from "@/lib/data/items";
 import { getPublishedItemsFromSupabase } from "@/lib/data/items-supabase";
+import { getPublishedRoutes } from "@/lib/data/routes-db";
 
 function computeRouteDerived(items: RouteItem[]) {
   const regions = [...new Set(items.map((i) => i.region))].sort();
@@ -35,6 +36,7 @@ export type RoutesData = {
     elevationMin: number;
     elevationMax: number;
   };
+  dbRoutes?: import("@/lib/data/routes-db").DbRoute[];
 };
 
 export type EventsData = {
@@ -57,7 +59,14 @@ export async function loadRoutesData(): Promise<RoutesData> {
   const routeItems = items.filter((i): i is RouteItem => i.type === "route");
   const { regions, trainingTags, numericBounds } =
     computeRouteDerived(routeItems);
-  return { items: routeItems, regions, trainingTags, numericBounds };
+  const dbRoutes = await getPublishedRoutes();
+  return {
+    items: routeItems,
+    regions,
+    trainingTags,
+    numericBounds,
+    dbRoutes,
+  };
 }
 
 /** Load only event+camp items for /events hub. Supabase only (no static fallback). */

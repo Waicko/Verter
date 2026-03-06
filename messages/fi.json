@@ -81,7 +81,11 @@
     "safetyDisclaimer": "Reittitiedot perustuvat käyttäjäraportteihin ja arviointeihin. Olosuhteet voivat muuttua – tarkista tien päällä oma kunto ja varovaisuus.",
     "safetyDisclaimerMore": "Lue lisää",
     "externalSources": "Lisälähteet",
-    "officialWebsite": "Virallinen sivu"
+    "officialWebsite": "Virallinen sivu",
+    "gpxRoutes": "Reitit GPX-tiedostoilla",
+    "gpxRoutesDescription": "Reitit, joilla on ladattava GPX-tiedosto.",
+    "viewDetails": "Näytä tiedot",
+    "downloadGpx": "Lataa GPX"
   },
   "winter": {
     "good": "Hyvä",
@@ -325,6 +329,7 @@
     "navContent": "Sisältö",
     "navSubmissions": "Ehdotukset",
     "navEvents": "Tapahtumat",
+    "navRoutes": "Reitit",
     "backToSite": "← Takaisin sivustolle",
     "editPrefix": "Muokkaa",
     "showPreview": "Esikatsele",

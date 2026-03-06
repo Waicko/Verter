@@ -83,7 +83,11 @@
     "safetyDisclaimerMore": "Read more",
     "externalSources": "External sources",
     "officialWebsite": "Official website",
-    "improveEventCta": "Is this your event? Improve the listing."
+    "improveEventCta": "Is this your event? Improve the listing.",
+    "gpxRoutes": "Routes with GPX",
+    "gpxRoutesDescription": "Routes with downloadable GPX files.",
+    "viewDetails": "View details",
+    "downloadGpx": "Download GPX"
   },
   "winter": {
     "good": "Good",
@@ -326,6 +330,7 @@
     "navContent": "Content",
     "navSubmissions": "Submissions",
     "navEvents": "Events",
+    "navRoutes": "Routes",
     "backToSite": "← Back to site",
     "editPrefix": "Edit",
     "showPreview": "Preview",
