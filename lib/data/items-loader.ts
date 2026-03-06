@@ -1,21 +1,23 @@
 import type { VerterItem, RouteItem, CampItem, EventItem } from "@/lib/types";
 import { items as staticItems } from "@/lib/data/items";
 import { getPublishedItemsFromSupabase } from "@/lib/data/items-supabase";
-import { getPublishedRoutes } from "@/lib/data/routes-db";
+import {
+  getPublishedRoutes,
+  type DbRoute,
+} from "@/lib/data/routes-db";
 
-function computeRouteDerived(items: RouteItem[]) {
-  const regions = [...new Set(items.map((i) => i.region))].sort();
-  const trainingTags = [...new Set(items.flatMap((i) => i.training_tags))].sort();
-  const distances = items.map((i) => i.distance_km);
-  const elevations = items.map((i) => i.elevation_gain_m);
+function computeRouteDerivedFromDb(routes: DbRoute[]) {
+  const regions = [...new Set(routes.map((r) => r.area).filter(Boolean))].sort() as string[];
+  const distances = routes.map((r) => r.distance_km).filter((n): n is number => n != null);
+  const elevations = routes.map((r) => r.ascent_m).filter((n): n is number => n != null);
   return {
     regions,
-    trainingTags,
+    trainingTags: [] as string[], // DB routes have no training_tags
     numericBounds: {
-      distanceMin: Math.min(0, ...distances),
-      distanceMax: Math.max(50, ...distances),
+      distanceMin: distances.length ? Math.min(0, ...distances) : 0,
+      distanceMax: distances.length ? Math.max(50, ...distances) : 50,
       elevationMin: 0,
-      elevationMax: Math.max(3000, ...elevations),
+      elevationMax: elevations.length ? Math.max(3000, ...elevations) : 3000,
     },
   };
 }
@@ -27,7 +29,7 @@ function computeEventsDerived(items: (CampItem | EventItem)[]) {
 }
 
 export type RoutesData = {
-  items: RouteItem[];
+  routes: import("@/lib/data/routes-db").DbRoute[];
   regions: string[];
   trainingTags: string[];
   numericBounds: {
@@ -36,7 +38,6 @@ export type RoutesData = {
     elevationMin: number;
     elevationMax: number;
   };
-  dbRoutes?: import("@/lib/data/routes-db").DbRoute[];
 };
 
 export type EventsData = {
@@ -53,19 +54,16 @@ async function loadAllItems(): Promise<VerterItem[]> {
   return supabaseItems.length > 0 ? supabaseItems : staticItems;
 }
 
-/** Load only route-type items for /routes hub. */
+/** Load published routes from Supabase for /routes hub. No static/placeholder routes. */
 export async function loadRoutesData(): Promise<RoutesData> {
-  const items = await loadAllItems();
-  const routeItems = items.filter((i): i is RouteItem => i.type === "route");
+  const routes = await getPublishedRoutes();
   const { regions, trainingTags, numericBounds } =
-    computeRouteDerived(routeItems);
-  const dbRoutes = await getPublishedRoutes();
+    computeRouteDerivedFromDb(routes);
   return {
-    items: routeItems,
+    routes,
     regions,
     trainingTags,
     numericBounds,
-    dbRoutes,
   };
 }
 

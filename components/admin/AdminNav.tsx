@@ -31,12 +31,6 @@ export default function AdminNav() {
         {t("navDashboard")}
       </Link>
       <Link
-        href="/admin/items/new"
-        className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
-      >
-        {t("navNewItem")}
-      </Link>
-      <Link
         href="/admin/team/new"
         className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
       >
@@ -53,12 +47,6 @@ export default function AdminNav() {
         className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
       >
         {t("navContent")}
-      </Link>
-      <Link
-        href="/admin/submissions"
-        className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
-      >
-        {t("navSubmissions")}
       </Link>
       <Link
         href="/admin/events"

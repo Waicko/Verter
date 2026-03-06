@@ -5,13 +5,12 @@ import { useMemo, useState, useEffect } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { RouteItem } from "@/lib/types";
-import ItemCard from "@/components/ItemCard";
 import RouteFilterBar from "@/components/RouteFilterBar";
 import AddListCta from "@/components/AddListCta";
 import EmptyState from "@/components/EmptyState";
 import type { DistanceRange, ElevationRange } from "@/components/FilterBar";
 import type { RoutesData } from "@/lib/data/items-loader";
+import type { DbRoute } from "@/lib/data/routes-db";
 import { getGpxDownloadUrl } from "@/lib/data/routes-db";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
@@ -57,7 +56,7 @@ interface RoutesPageClientProps {
 }
 
 export default function RoutesPageClient({ data }: RoutesPageClientProps) {
-  const { items, regions, trainingTags, numericBounds, dbRoutes = [] } = data;
+  const { routes, regions, trainingTags, numericBounds } = data;
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations("routes");
@@ -89,44 +88,27 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [mapVisible, setMapVisible, initialized] = useMapVisible();
 
-  const filteredItems = useMemo(() => {
-    return items.filter((item: RouteItem) => {
+  const filteredRoutes = useMemo(() => {
+    return routes.filter((r: DbRoute) => {
       const regionMatch =
-        selectedRegions.length === 0 || selectedRegions.includes(item.region);
-      const tagMatch =
-        selectedTags.length === 0 ||
-        item.training_tags.some((tag) => selectedTags.includes(tag));
+        selectedRegions.length === 0 ||
+        (r.area != null && selectedRegions.includes(r.area));
+      const tagMatch = selectedTags.length === 0; // DB routes have no training_tags
       const distanceMatch =
         (distanceRange.min == null && distanceRange.max == null) ||
-        (item.distance_km != null &&
-          (distanceRange.min == null || item.distance_km >= distanceRange.min) &&
-          (distanceRange.max == null || item.distance_km <= distanceRange.max));
-      const itemElevation = item.elevation_gain_m ?? 0;
+        (r.distance_km != null &&
+          (distanceRange.min == null || r.distance_km >= distanceRange.min) &&
+          (distanceRange.max == null || r.distance_km <= distanceRange.max));
+      const itemElevation = r.ascent_m ?? 0;
       const elevationMatch =
         (elevationRange.min == null && elevationRange.max == null) ||
-        (elevationRange.min == null || itemElevation >= elevationRange.min) &&
-          (elevationRange.max == null || itemElevation <= elevationRange.max);
+        ((elevationRange.min == null || itemElevation >= elevationRange.min) &&
+          (elevationRange.max == null || itemElevation <= elevationRange.max));
       return regionMatch && tagMatch && distanceMatch && elevationMatch;
     });
-  }, [items, selectedRegions, selectedTags, distanceRange, elevationRange]);
+  }, [routes, selectedRegions, selectedTags, distanceRange, elevationRange]);
 
-  const mapRoutes = useMemo(
-    () =>
-      filteredItems
-        .filter(
-          (r): r is RouteItem & { start_lat: number; start_lng: number } =>
-            r.start_lat != null && r.start_lng != null
-        )
-        .map((r) => ({
-          slug: r.slug,
-          name: r.name,
-          region: r.region,
-          distance_km: r.distance_km,
-          start_lat: r.start_lat!,
-          start_lng: r.start_lng!,
-        })),
-    [filteredItems]
-  );
+  const mapRoutes = useMemo(() => [], []); // DB routes have no start_lat/lng; map shows empty
 
   const updateUrl = (options: {
     regions?: string[];
@@ -220,6 +202,8 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
           </div>
         </div>
 
+        {routes.length > 0 && (
+        <>
         <div className="mt-8">
           <RouteFilterBar
             regions={regions}
@@ -242,18 +226,74 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredItems.map((item) => (
+          {filteredRoutes.map((r) => (
             <div
-              key={item.id}
-              onMouseEnter={() => setSelectedSlug(item.slug)}
+              key={r.id}
+              onMouseEnter={() => setSelectedSlug(r.slug)}
               onMouseLeave={() => setSelectedSlug(null)}
+              className="rounded-card border border-verter-border bg-white/70 p-4"
             >
-              <ItemCard item={item} />
+              <Link
+                href={`/routes/${r.slug}`}
+                className="font-heading font-semibold text-verter-graphite hover:text-verter-forest"
+              >
+                {r.title}
+              </Link>
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-verter-muted">
+                {r.area && <span>{r.area}</span>}
+                {r.distance_km != null && <span>{r.distance_km} km</span>}
+                {r.ascent_m != null && <span>+{r.ascent_m} m</span>}
+              </div>
+              {r.description && (
+                <p className="mt-2 text-sm text-verter-graphite line-clamp-2">
+                  {r.description}
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href={`/routes/${r.slug}`}
+                  className="text-sm font-medium text-verter-forest hover:underline"
+                >
+                  {t("viewDetails")}
+                </Link>
+                {r.gpx_path && (
+                  <a
+                    href={getGpxDownloadUrl(r.gpx_path)}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-verter-forest hover:underline"
+                  >
+                    {t("downloadGpx")}
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  </a>
+                )}
+              </div>
             </div>
           ))}
         </div>
+        </>
+        )}
 
-        {filteredItems.length === 0 && (
+        {routes.length === 0 && (
+          <p className="mt-8 text-center text-verter-muted">
+            Ei vielä julkaistuja reittejä.
+          </p>
+        )}
+
+        {routes.length > 0 && filteredRoutes.length === 0 && (
           <EmptyState
             namespace="routes"
             hasActiveFilters={
@@ -266,78 +306,6 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
             }
             onClearFilters={clearAll}
           />
-        )}
-
-        {dbRoutes.length > 0 && (
-          <div className="mt-12">
-            <h2 className="font-heading text-xl font-semibold text-verter-graphite">
-              {t("gpxRoutes")}
-            </h2>
-            <p className="mt-1 text-sm text-verter-muted">
-              {t("gpxRoutesDescription")}
-            </p>
-            <div className="mt-4 space-y-3">
-              {dbRoutes.map((r) => (
-                <div
-                  key={r.id}
-                  className="rounded-card border border-verter-border bg-white/70 p-4"
-                >
-                  <Link
-                    href={`/routes/${r.slug}`}
-                    className="font-heading font-semibold text-verter-graphite hover:text-verter-forest"
-                  >
-                    {r.title}
-                  </Link>
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-verter-muted">
-                    {r.area && <span>{r.area}</span>}
-                    {r.distance_km != null && (
-                      <span>{r.distance_km} km</span>
-                    )}
-                    {r.ascent_m != null && (
-                      <span>+{r.ascent_m} m</span>
-                    )}
-                  </div>
-                  {r.description && (
-                    <p className="mt-2 text-sm text-verter-graphite line-clamp-2">
-                      {r.description}
-                    </p>
-                  )}
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Link
-                      href={`/routes/${r.slug}`}
-                      className="text-sm font-medium text-verter-forest hover:underline"
-                    >
-                      {t("viewDetails")}
-                    </Link>
-                    {r.gpx_path && (
-                      <a
-                        href={getGpxDownloadUrl(r.gpx_path)}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm font-medium text-verter-forest hover:underline"
-                      >
-                        {t("downloadGpx")}
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          />
-                        </svg>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
 
         <div className="mt-12">

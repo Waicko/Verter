@@ -1,22 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import AdminItemCard from "@/components/admin/AdminItemCard";
 import AdminContentItemCard from "@/components/admin/AdminContentItemCard";
 import AdminTeamCard from "@/components/admin/AdminTeamCard";
-import { ApproveRejectButtons } from "./submissions/ApproveRejectButtons";
-import type { AdminDbItem } from "@/lib/data/admin-items";
 import type { AdminTeamMember } from "@/lib/data/team";
 import type { AdminContentItem } from "@/lib/data/content-items";
 
 type Tab = "published" | "pending" | "drafts";
 
 interface Props {
-  publishedItems: AdminDbItem[];
-  pendingItems: AdminDbItem[];
-  draftItems: AdminDbItem[];
   publishedTeam: AdminTeamMember[];
   draftTeam: AdminTeamMember[];
   publishedContent: AdminContentItem[];
@@ -24,60 +18,16 @@ interface Props {
 }
 
 export default function AdminDashboardClient({
-  publishedItems,
-  pendingItems,
-  draftItems,
   publishedTeam,
   draftTeam,
   publishedContent,
   draftContent,
 }: Props) {
   const locale = useLocale();
-  const router = useRouter();
   const t = useTranslations("admin");
   const [activeTab, setActiveTab] = useState<Tab>("published");
   const [search, setSearch] = useState("");
 
-  const itemsByTab: Record<Tab, AdminDbItem[]> = {
-    published: publishedItems,
-    pending: pendingItems,
-    drafts: draftItems,
-  };
-  const items = itemsByTab[activeTab];
-
-  const routes = useMemo(
-    () =>
-      items
-        .filter((i) => i.type === "route")
-        .filter(
-          (i) =>
-            !search ||
-            i.name.toLowerCase().includes(search.toLowerCase())
-        ),
-    [items, search]
-  );
-  const events = useMemo(
-    () =>
-      items
-        .filter((i) => i.type === "event")
-        .filter(
-          (i) =>
-            !search ||
-            i.name.toLowerCase().includes(search.toLowerCase())
-        ),
-    [items, search]
-  );
-  const camps = useMemo(
-    () =>
-      items
-        .filter((i) => i.type === "camp")
-        .filter(
-          (i) =>
-            !search ||
-            i.name.toLowerCase().includes(search.toLowerCase())
-        ),
-    [items, search]
-  );
   const contentByTab: Record<Tab, AdminContentItem[]> = {
     published: publishedContent,
     pending: [],
@@ -118,12 +68,10 @@ export default function AdminDashboardClient({
 
   const Section = ({
     title,
-    type,
     children,
     addNewHref,
   }: {
     title: string;
-    type: "route" | "event" | "camp" | "content";
     children: React.ReactNode;
     addNewHref: string;
   }) => (
@@ -143,17 +91,6 @@ export default function AdminDashboardClient({
         {children}
       </div>
     </section>
-  );
-
-  const ItemRow = ({ item, showApprove }: { item: AdminDbItem; showApprove?: boolean }) => (
-    <div key={item.id} className="relative">
-      <AdminItemCard item={{ ...item, id: item.id, status: item.status }} />
-      {showApprove && activeTab === "pending" && (
-        <div className="absolute bottom-2 right-2 z-10">
-          <ApproveRejectButtons itemId={item.id} locale={locale} />
-        </div>
-      )}
-    </div>
   );
 
   return (
@@ -191,56 +128,7 @@ export default function AdminDashboardClient({
 
       <div className="mt-8">
         <Section
-          title={t("sectionRoutes")}
-          type="route"
-          addNewHref={`/${locale}/admin/items/new?type=route`}
-        >
-          {routes.length === 0 ? (
-            <p className="col-span-full py-8 text-center text-sm text-verter-muted">
-              {t("noItems")}
-            </p>
-          ) : (
-            routes.map((item) => (
-              <ItemRow key={item.id} item={item} showApprove />
-            ))
-          )}
-        </Section>
-
-        <Section
-          title={t("sectionEvents")}
-          type="event"
-          addNewHref={`/${locale}/admin/items/new?type=event`}
-        >
-          {events.length === 0 ? (
-            <p className="col-span-full py-8 text-center text-sm text-verter-muted">
-              {t("noItems")}
-            </p>
-          ) : (
-            events.map((item) => (
-              <ItemRow key={item.id} item={item} showApprove />
-            ))
-          )}
-        </Section>
-
-        <Section
-          title={t("sectionCamps")}
-          type="camp"
-          addNewHref={`/${locale}/admin/items/new?type=camp`}
-        >
-          {camps.length === 0 ? (
-            <p className="col-span-full py-8 text-center text-sm text-verter-muted">
-              {t("noItems")}
-            </p>
-          ) : (
-            camps.map((item) => (
-              <ItemRow key={item.id} item={item} showApprove />
-            ))
-          )}
-        </Section>
-
-        <Section
           title={t("sectionContent")}
-          type="content"
           addNewHref={`/${locale}/admin/content/new?type=blog`}
         >
           {activeTab === "pending" ? (
@@ -260,7 +148,6 @@ export default function AdminDashboardClient({
 
         <Section
           title={t("sectionTeam")}
-          type="content"
           addNewHref={`/${locale}/admin/team/new`}
         >
           {activeTab === "pending" ? (
