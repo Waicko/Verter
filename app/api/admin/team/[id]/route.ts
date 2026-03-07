@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { DbTeamMemberUpdate } from "@/lib/db/team-types";
-
-const ADMIN_COOKIE = "admin_auth";
-
-async function checkAdmin() {
-  return cookies().then((c) => c.get(ADMIN_COOKIE)?.value === "1");
-}
+import { checkAdmin } from "@/lib/admin-auth";
 
 export async function PATCH(
   _request: NextRequest,
@@ -69,4 +63,23 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json(data);
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!(await checkAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const { id } = await params;
+  const supabase = getSupabaseServerClient();
+  const { error } = await supabase.from("team_members").delete().eq("id", id);
+  if (error) {
+    return NextResponse.json(
+      { error: error.message || "Delete failed" },
+      { status: 400 }
+    );
+  }
+  return NextResponse.json({ ok: true });
 }

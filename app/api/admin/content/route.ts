@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { DbContentItemInsert } from "@/lib/db/content-types";
-
-const ADMIN_COOKIE = "admin_auth";
-
-async function checkAdmin() {
-  return cookies().then((c) => c.get(ADMIN_COOKIE)?.value === "1");
-}
+import { checkAdmin } from "@/lib/admin-auth";
 
 function slugify(s: string): string {
   return s

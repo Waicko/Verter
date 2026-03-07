@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { calculateGpxStats } from "@/lib/route-gpx-stats";
+import { checkAdmin } from "@/lib/admin-auth";
 
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
 const GPX_BUCKET = "gpx"; // Must match Supabase Storage bucket name exactly
 
-function checkAuth(request: NextRequest): boolean {
-  const token = request.headers.get("x-admin-token");
-  return !!ADMIN_TOKEN && !!token && token === ADMIN_TOKEN;
-}
-
 export async function POST(request: NextRequest) {
-  if (!checkAuth(request)) {
+  if (!(await checkAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { DbPodcastGuestInsert } from "@/lib/db/podcast-types";
-
-const ADMIN_COOKIE = "admin_auth";
-
-async function checkAdmin() {
-  return cookies().then((c) => c.get(ADMIN_COOKIE)?.value === "1");
-}
+import { checkAdmin } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
   if (!(await checkAdmin())) {

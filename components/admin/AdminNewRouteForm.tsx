@@ -4,13 +4,6 @@ import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import RouteForm, { type RouteFormData } from "./RouteForm";
 
-const TOKEN_KEY = "admin_token";
-
-function getToken(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(TOKEN_KEY) ?? "";
-}
-
 export default function AdminNewRouteForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -18,20 +11,12 @@ export default function AdminNewRouteForm() {
 
   const handleSubmit = async (data: RouteFormData) => {
     setError(null);
-    const token = getToken();
-    if (!token) {
-      setError("Admin-tunnus puuttuu. Palaa reittilistalle ja syötä tunnus.");
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch("/api/admin/routes/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-token": token,
-        },
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: data.title,
           area: data.area || null,

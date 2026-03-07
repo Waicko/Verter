@@ -102,21 +102,11 @@ export default function RouteForm({
     setGpxUploadStatus("uploading");
     setGpxUploadMessage("Uploading...");
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("admin_token") ?? ""
-          : "";
-      if (!token) {
-        setGpxUploadStatus("failed");
-        setGpxUploadMessage("Upload failed: Admin token missing. Enter token on routes list page.");
-        setValidationError("Admin-tunnus puuttuu. Syötä tunnus reittilistalla.");
-        return;
-      }
       const formData = new FormData();
       formData.append("gpx", file);
       const res = await fetch("/api/admin/routes/upload", {
         method: "POST",
-        headers: { "x-admin-token": token },
+        credentials: "include",
         body: formData,
       });
       const json = await res.json().catch(() => ({}));

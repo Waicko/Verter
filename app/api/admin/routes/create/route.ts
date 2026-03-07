@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
-
-function checkAuth(request: NextRequest): boolean {
-  const token = request.headers.get("x-admin-token");
-  return !!ADMIN_TOKEN && !!token && token === ADMIN_TOKEN;
-}
+import { checkAdmin } from "@/lib/admin-auth";
 
 function slugify(s: string): string {
   return s
@@ -19,7 +13,7 @@ function slugify(s: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  if (!checkAuth(request)) {
+  if (!(await checkAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

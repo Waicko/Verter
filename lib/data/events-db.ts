@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+export type EventType = "race" | "camp" | "community";
+
 export type DbEvent = {
   id: string;
   title: string;
@@ -8,23 +10,31 @@ export type DbEvent = {
   location: string | null;
   registration_url: string | null;
   description: string | null;
+  type: EventType | null;
   status: string;
   created_at: string;
   updated_at: string;
 };
 
-export async function getPublishedEvents(): Promise<DbEvent[]> {
+export async function getPublishedEvents(
+  typeFilter?: EventType | null
+): Promise<DbEvent[]> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return [];
 
   const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
-  const { data, error } = await supabase
+  let query = supabase
     .from("events")
     .select("*")
     .eq("status", "published")
     .order("date", { ascending: true });
 
+  if (typeFilter) {
+    query = query.eq("type", typeFilter);
+  }
+
+  const { data, error } = await query;
   if (error) return [];
   return (data ?? []) as DbEvent[];
 }

@@ -4,16 +4,11 @@ import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
-const ADMIN_TOKEN_KEY = "admin_token";
-
 export default function AdminNav() {
   const router = useRouter();
   const t = useTranslations("admin");
 
   const handleLogout = async () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(ADMIN_TOKEN_KEY);
-    }
     try {
       await fetch("/api/admin/auth", { method: "DELETE" });
     } catch {

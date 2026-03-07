@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 
-const TOKEN_KEY = "admin_token";
-
 type EventRow = {
   id: string;
   title?: string;
@@ -16,29 +14,16 @@ type EventRow = {
   status?: string;
 };
 
-function getToken(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(TOKEN_KEY) ?? "";
-}
-
-function setToken(token: string) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(TOKEN_KEY, token);
-}
-
-function clearToken() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(TOKEN_KEY);
-}
-
 function getApiUrl(path: string): string {
   return `/api/admin/events${path}`;
 }
 
+async function fetchWithAuth(url: string, options?: RequestInit): Promise<Response> {
+  return fetch(url, { credentials: "include", ...options });
+}
+
 export default function AdminEventsClient() {
   const searchParams = useSearchParams();
-  const [token, setTokenState] = useState("");
-  const [tokenInput, setTokenInput] = useState("");
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,22 +37,14 @@ export default function AdminEventsClient() {
     );
   }, [searchParams]);
 
-  useEffect(() => {
-    setTokenState(getToken());
-  }, []);
-
-  const fetchEvents = async (authToken: string) => {
+  const fetchEvents = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(getApiUrl(""), {
-        headers: { "x-admin-token": authToken },
-      });
+      const res = await fetchWithAuth(getApiUrl(""));
       if (!res.ok) {
         if (res.status === 401) {
-          clearToken();
-          setTokenState("");
-          setError("Virheellinen admin token");
+          setError("Kirjaudu uudelleen sisään.");
           return;
         }
         const data = await res.json().catch(() => ({}));
@@ -84,46 +61,28 @@ export default function AdminEventsClient() {
   };
 
   useEffect(() => {
-    const t = getToken();
-    if (t) fetchEvents(t);
-    else setLoading(false);
-  }, [token]);
-
-  const handleSaveToken = () => {
-    const t = tokenInput.trim();
-    if (!t) return;
-    setToken(t);
-    setTokenState(t);
-    setTokenInput("");
-    fetchEvents(t);
-  };
-
-  const clearTokenAndShowError = () => {
-    clearToken();
-    setTokenState("");
-    setError("Virheellinen admin token");
-  };
+    fetchEvents();
+  }, []);
 
   const handlePublish = async (id: string) => {
-    const t = getToken();
-    if (!t) return;
     setActionLoading(id);
     try {
-      const res = await fetch(getApiUrl("/publish"), {
+      const res = await fetchWithAuth(getApiUrl("/publish"), {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-token": t },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
         if (res.status === 401) {
-          clearTokenAndShowError();
+          setError("Kirjaudu uudelleen sisään.");
           return;
         }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Julkaisu epäonnistui.");
         return;
       }
-      fetchEvents(t);
+      setSuccessMessage("Tapahtuma julkaistu.");
+      fetchEvents();
     } catch {
       setError("Julkaisu epäonnistui.");
     } finally {
@@ -132,18 +91,16 @@ export default function AdminEventsClient() {
   };
 
   const handleDelete = async (id: string) => {
-    const t = getToken();
-    if (!t) return;
     setActionLoading(id);
     try {
-      const res = await fetch(getApiUrl("/delete"), {
+      const res = await fetchWithAuth(getApiUrl("/delete"), {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-token": t },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
         if (res.status === 401) {
-          clearTokenAndShowError();
+          setError("Kirjaudu uudelleen sisään.");
           return;
         }
         const data = await res.json().catch(() => ({}));
@@ -151,7 +108,8 @@ export default function AdminEventsClient() {
         return;
       }
       setDeleteConfirmId(null);
-      fetchEvents(t);
+      setSuccessMessage("Tapahtuma poistettu.");
+      fetchEvents();
     } catch {
       setError("Poisto epäonnistui.");
     } finally {
@@ -160,61 +118,30 @@ export default function AdminEventsClient() {
   };
 
   const handleUnpublish = async (id: string) => {
-    const t = getToken();
-    if (!t) return;
     setActionLoading(id);
     try {
-      const res = await fetch(getApiUrl("/unpublish"), {
+      const res = await fetchWithAuth(getApiUrl("/unpublish"), {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-token": t },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
         if (res.status === 401) {
-          clearTokenAndShowError();
+          setError("Kirjaudu uudelleen sisään.");
           return;
         }
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Palautus epäonnistui.");
         return;
       }
-      fetchEvents(t);
+      setSuccessMessage("Tapahtuma palautettu luonnokseksi.");
+      fetchEvents();
     } catch {
       setError("Palautus epäonnistui.");
     } finally {
       setActionLoading(null);
     }
   };
-
-  if (!token) {
-    return (
-      <div className="space-y-6">
-        <h1 className="font-heading text-2xl font-bold text-verter-graphite">
-          Tapahtumien hallinta
-        </h1>
-        <p className="text-verter-muted">
-          Syötä admin-tunnus (ADMIN_TOKEN) päästäksesi tapahtumiin.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="Admin-tunnus"
-            className="rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-forest focus:outline-none focus:ring-1 focus:ring-verter-forest"
-          />
-          <button
-            type="button"
-            onClick={handleSaveToken}
-            disabled={!tokenInput.trim()}
-            className="rounded-card border border-verter-forest bg-verter-forest px-4 py-2 font-medium text-white hover:opacity-95 disabled:opacity-50"
-          >
-            Jatka
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

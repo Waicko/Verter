@@ -4,13 +4,6 @@ import { useState, useEffect } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import EventForm, { type EventFormData } from "./EventForm";
 
-const TOKEN_KEY = "admin_token";
-
-function getToken(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(TOKEN_KEY) ?? "";
-}
-
 type EventRow = {
   id: string;
   title?: string;
@@ -33,15 +26,8 @@ export default function AdminEditEventForm({ eventId }: AdminEditEventFormProps)
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      setError("Admin-tunnus puuttuu. Palaa tapahtumalistalle ja syötä tunnus.");
-      setFetchLoading(false);
-      return;
-    }
-
     fetch(`/api/admin/events?id=${encodeURIComponent(eventId)}`, {
-      headers: { "x-admin-token": token },
+      credentials: "include",
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -70,20 +56,12 @@ export default function AdminEditEventForm({ eventId }: AdminEditEventFormProps)
 
   const handleSubmit = async (data: EventFormData) => {
     setError(null);
-    const token = getToken();
-    if (!token) {
-      setError("Admin-tunnus puuttuu. Palaa tapahtumalistalle ja syötä tunnus.");
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch("/api/admin/events/update", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-token": token,
-        },
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: eventId,
           title: data.title,

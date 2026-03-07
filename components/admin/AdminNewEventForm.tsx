@@ -27,6 +27,7 @@ export default function AdminNewEventForm() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/events/create", {
+        credentials: "include",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
