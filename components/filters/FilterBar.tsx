@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 
 interface FilterBarProps {
-  children: ReactNode;
+  children?: ReactNode;
   hasActiveFilters: boolean;
   onClearAll: () => void;
   clearLabel?: string;

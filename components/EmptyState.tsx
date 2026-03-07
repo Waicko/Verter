@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 interface EmptyStateProps {
-  namespace: "routes" | "events";
+  namespace: "routes" | "events" | "content";
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
 }
