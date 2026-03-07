@@ -401,6 +401,17 @@
       "createDescription": "Add a team member."
     }
   },
+  "filters": {
+    "hasGpx": "Only routes with GPX",
+    "sortBy": "Sort by",
+    "sortDistance": "Distance",
+    "sortAscent": "Elevation",
+    "sortNewest": "Newest first",
+    "sortDate": "Date",
+    "sortTitle": "Title",
+    "sortPublished": "Published date",
+    "sortEpisode": "Episode number"
+  },
   "common": {
     "mapLoading": "Map loading",
     "mapShowingRoutes": "Map showing route locations",

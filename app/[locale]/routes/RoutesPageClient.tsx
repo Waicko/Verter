@@ -12,6 +12,13 @@ import type { DistanceRange, ElevationRange } from "@/components/FilterBar";
 import type { RoutesData } from "@/lib/data/routes-loader";
 import type { DbRoute } from "@/lib/data/routes-db";
 import { getGpxDownloadUrl } from "@/lib/data/routes-db";
+import {
+  parseRoutesParams,
+  routesStateToParams,
+  filterAndSortRoutes,
+  ROUTES_SORT,
+  type RoutesFilterState,
+} from "@/lib/search/routes-filters";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
@@ -61,52 +68,28 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
   const router = useRouter();
   const t = useTranslations("routes");
   const tCommon = useTranslations("common");
-  const selectedRegions = searchParams.getAll("region");
-  const selectedTags = searchParams.getAll("training");
-  const distanceMin = searchParams.get("distanceMin");
-  const distanceMax = searchParams.get("distanceMax");
-  const elevationMin = searchParams.get("elevationMin");
-  const elevationMax = searchParams.get("elevationMax");
-
-  const distanceRange: DistanceRange = useMemo(() => {
-    const min = distanceMin != null ? parseFloat(distanceMin) : undefined;
-    const max = distanceMax != null ? parseFloat(distanceMax) : undefined;
-    return {
-      min: typeof min === "number" && !Number.isNaN(min) ? min : undefined,
-      max: typeof max === "number" && !Number.isNaN(max) ? max : undefined,
-    };
-  }, [distanceMin, distanceMax]);
-  const elevationRange: ElevationRange = useMemo(() => {
-    const min = elevationMin != null ? parseFloat(elevationMin) : undefined;
-    const max = elevationMax != null ? parseFloat(elevationMax) : undefined;
-    return {
-      min: typeof min === "number" && !Number.isNaN(min) ? min : undefined,
-      max: typeof max === "number" && !Number.isNaN(max) ? max : undefined,
-    };
-  }, [elevationMin, elevationMax]);
+  const filterState = useMemo(
+    () => parseRoutesParams(searchParams),
+    [searchParams]
+  );
+  const selectedRegions = filterState.area;
+  const selectedTags: string[] = []; // routes have no training_tags in DB
+  const distanceRange = {
+    min: filterState.distanceMin,
+    max: filterState.distanceMax,
+  };
+  const elevationRange = {
+    min: filterState.ascentMin,
+    max: filterState.ascentMax,
+  };
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [mapVisible, setMapVisible, initialized] = useMapVisible();
 
-  const filteredRoutes = useMemo(() => {
-    return routes.filter((r: DbRoute) => {
-      const regionMatch =
-        selectedRegions.length === 0 ||
-        (r.area != null && selectedRegions.includes(r.area));
-      const tagMatch = selectedTags.length === 0; // DB routes have no training_tags
-      const distanceMatch =
-        (distanceRange.min == null && distanceRange.max == null) ||
-        (r.distance_km != null &&
-          (distanceRange.min == null || r.distance_km >= distanceRange.min) &&
-          (distanceRange.max == null || r.distance_km <= distanceRange.max));
-      const itemElevation = r.ascent_m ?? 0;
-      const elevationMatch =
-        (elevationRange.min == null && elevationRange.max == null) ||
-        ((elevationRange.min == null || itemElevation >= elevationRange.min) &&
-          (elevationRange.max == null || itemElevation <= elevationRange.max));
-      return regionMatch && tagMatch && distanceMatch && elevationMatch;
-    });
-  }, [routes, selectedRegions, selectedTags, distanceRange, elevationRange]);
+  const filteredRoutes = useMemo(
+    () => filterAndSortRoutes(routes, filterState),
+    [routes, filterState]
+  );
 
   const mapRoutes = useMemo(() => [], []); // DB routes have no start_lat/lng; map shows empty
 
@@ -115,41 +98,31 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
     tags?: string[];
     distanceRange?: DistanceRange;
     elevationRange?: ElevationRange;
+    hasGpx?: boolean;
+    sort?: string;
   }) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const regs = options.regions ?? selectedRegions;
-    const tags = options.tags ?? selectedTags;
-    const dist = options.distanceRange ?? distanceRange;
-    const elev = options.elevationRange ?? elevationRange;
-
-    params.delete("region");
-    params.delete("training");
-    params.delete("distanceMin");
-    params.delete("distanceMax");
-    params.delete("elevationMin");
-    params.delete("elevationMax");
-    regs.forEach((r) => params.append("region", r));
-    tags.forEach((tag) => params.append("training", tag));
-    if (dist.min != null) params.set("distanceMin", String(dist.min));
-    if (dist.max != null) params.set("distanceMax", String(dist.max));
-    if (elev.min != null) params.set("elevationMin", String(elev.min));
-    if (elev.max != null) params.set("elevationMax", String(elev.max));
+    const nextState: RoutesFilterState = {
+      area: options.regions ?? selectedRegions,
+      distanceMin: (options.distanceRange ?? distanceRange).min,
+      distanceMax: (options.distanceRange ?? distanceRange).max,
+      ascentMin: (options.elevationRange ?? elevationRange).min,
+      ascentMax: (options.elevationRange ?? elevationRange).max,
+      has_gpx: options.hasGpx ?? filterState.has_gpx,
+      sort: options.sort ?? filterState.sort,
+    };
+    const params = routesStateToParams(nextState);
+    const mapParam = searchParams.get("map");
+    if (mapParam) params.set("map", mapParam);
     const query = params.toString();
     router.replace(query ? `/routes?${query}` : "/routes");
   };
 
+  const toggleTag = (_tag: string) => {}; // trainingTags empty for DB routes
   const toggleRegion = (region: string) => {
     const next = selectedRegions.includes(region)
       ? selectedRegions.filter((r) => r !== region)
       : [...selectedRegions, region];
     updateUrl({ regions: next });
-  };
-
-  const toggleTag = (tag: string) => {
-    const next = selectedTags.includes(tag)
-      ? selectedTags.filter((t) => t !== tag)
-      : [...selectedTags, tag];
-    updateUrl({ tags: next });
   };
 
   const clearAll = () =>
@@ -158,7 +131,18 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
       tags: [],
       distanceRange: {},
       elevationRange: {},
+      hasGpx: false,
+      sort: ROUTES_SORT.default,
     });
+
+  const hasActiveFilters =
+    selectedRegions.length > 0 ||
+    distanceRange.min != null ||
+    distanceRange.max != null ||
+    elevationRange.min != null ||
+    elevationRange.max != null ||
+    filterState.has_gpx ||
+    filterState.sort !== ROUTES_SORT.default;
 
   return (
     <div className="px-4 py-8 sm:px-6 sm:py-12">
@@ -298,7 +282,7 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
             namespace="routes"
             hasActiveFilters={
               selectedRegions.length > 0 ||
-              selectedTags.length > 0 ||
+              false ||
               distanceRange.min != null ||
               distanceRange.max != null ||
               elevationRange.min != null ||

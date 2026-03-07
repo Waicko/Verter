@@ -10,6 +10,9 @@ interface RouteFilterBarProps {
   selectedTags: string[];
   distanceRange: DistanceRange;
   elevationRange: ElevationRange;
+  hasGpx?: boolean;
+  sort?: string;
+  sortOptions?: { value: string; label: string }[];
   numericBounds: {
     distanceMin: number;
     distanceMax: number;
@@ -20,6 +23,8 @@ interface RouteFilterBarProps {
   onToggleTag: (tag: string) => void;
   onDistanceRangeChange: (range: DistanceRange) => void;
   onElevationRangeChange: (range: ElevationRange) => void;
+  onHasGpxChange?: (value: boolean) => void;
+  onSortChange?: (value: string) => void;
   onClearAll: () => void;
 }
 
@@ -30,14 +35,20 @@ export default function RouteFilterBar({
   selectedTags,
   distanceRange,
   elevationRange,
+  hasGpx = false,
+  sort,
+  sortOptions = [],
   numericBounds,
   onToggleRegion,
   onToggleTag,
   onDistanceRangeChange,
   onElevationRangeChange,
+  onHasGpxChange,
+  onSortChange,
   onClearAll,
 }: RouteFilterBarProps) {
   const t = useTranslations("routes");
+  const tFilters = useTranslations("filters");
   const tCommon = useTranslations("common");
   const hasActiveFilters =
     selectedRegions.length > 0 ||
@@ -45,7 +56,9 @@ export default function RouteFilterBar({
     distanceRange.min != null ||
     distanceRange.max != null ||
     elevationRange.min != null ||
-    elevationRange.max != null;
+    elevationRange.max != null ||
+    hasGpx ||
+    (sort != null && sort !== "created_at");
 
   return (
     <div className="min-w-0 space-y-4">
@@ -159,6 +172,41 @@ export default function RouteFilterBar({
           </div>
         </div>
       </div>
+
+      {onHasGpxChange && (
+        <div>
+          <label className="inline-flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={hasGpx}
+              onChange={(e) => onHasGpxChange(e.target.checked)}
+              className="h-4 w-4 rounded border-verter-border text-verter-forest focus:ring-verter-blue"
+            />
+            <span className="text-sm font-medium text-verter-graphite">
+              {tFilters("hasGpx")}
+            </span>
+          </label>
+        </div>
+      )}
+
+      {onSortChange && sortOptions.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-verter-muted">
+            {tFilters("sortBy")}
+          </p>
+          <select
+            value={sort ?? ""}
+            onChange={(e) => onSortChange(e.target.value)}
+            className="mt-2 rounded-pill border border-verter-border bg-verter-snow px-3 py-1.5 text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+          >
+            {sortOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-verter-muted">

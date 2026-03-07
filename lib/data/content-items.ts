@@ -10,6 +10,7 @@ export type ContentItemPublic = {
   published_at?: string;
   image_url?: string;
   related_item_ids?: string[];
+  author?: string | null;
 };
 
 export type ContentItemDetail = ContentItemPublic & {
@@ -27,6 +28,7 @@ function rowToPublic(row: DbContentItem): ContentItemPublic {
     published_at: row.published_at ?? undefined,
     image_url: row.hero_image ?? undefined,
     related_item_ids: Array.isArray(row.related_item_ids) ? row.related_item_ids : undefined,
+    author: row.author ?? undefined,
   };
 }
 

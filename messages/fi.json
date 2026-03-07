@@ -401,6 +401,17 @@
       "createDescription": "Lisää tiimin jäsen."
     }
   },
+  "filters": {
+    "hasGpx": "Vain reitit GPX-tiedostolla",
+    "sortBy": "Järjestä",
+    "sortDistance": "Matka",
+    "sortAscent": "Nousu",
+    "sortNewest": "Uusin ensin",
+    "sortDate": "Päivämäärä",
+    "sortTitle": "Otsikko",
+    "sortPublished": "Julkaisupäivä",
+    "sortEpisode": "Jaksonumero"
+  },
   "common": {
     "mapLoading": "Kartta latautuu",
     "mapShowingRoutes": "Kartta reittien sijainneista",
