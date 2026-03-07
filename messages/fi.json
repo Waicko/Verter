@@ -112,6 +112,11 @@
   "events": {
     "title": "Tapahtumat & Leirit",
     "loadError": "Tapahtumien lataus epäonnistui. Yritä myöhemmin uudelleen.",
+    "filterByType": "Suodata tyypin mukaan",
+    "allTypes": "Kaikki tyypit",
+    "typeRace": "Kilpailu",
+    "typeCamp": "Leiri",
+    "typeCommunity": "Yhteisö",
     "register": "Ilmoittaudu",
     "description": "Juoksukilpailut, -leirit ja -workshopit.",
     "noResults": "Tapahtumia tai leirejä ei löydy valituilla suodattimilla.",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseServerClient } from "@/lib/admin-auth";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { checkAdmin } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
   if (!(await checkAdmin())) {

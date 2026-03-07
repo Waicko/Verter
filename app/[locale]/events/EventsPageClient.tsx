@@ -1,132 +1,54 @@
 "use client";
 
-import { useMemo } from "react";
-import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import type { CampItem, EventItem } from "@/lib/types";
-import EventListItem from "@/components/EventListItem";
-import EventsFilterBar from "@/components/EventsFilterBar";
-import AddListCta from "@/components/AddListCta";
+import { Link } from "@/i18n/navigation";
+import { FilterSelect } from "@/components/filters";
 import EmptyState from "@/components/EmptyState";
-import type { EventsData } from "@/lib/data/items-loader";
+import AddListCta from "@/components/AddListCta";
+import type { DbEvent } from "@/lib/data/events-db";
 
-const EVENT_TYPES = ["event", "camp"] as const;
-type EventTypeFilter = (typeof EVENT_TYPES)[number];
+type EventType = "race" | "camp" | "community";
 
-interface EventsPageClientProps {
-  data: EventsData;
+interface Props {
+  events: DbEvent[];
 }
 
-export default function EventsPageClient({ data }: EventsPageClientProps) {
-  const { items, regions, trainingTags } = data;
+const TYPE_OPTIONS: { value: string; labelKey: "allTypes" | "typeRace" | "typeCamp" | "typeCommunity" }[] = [
+  { value: "", labelKey: "allTypes" },
+  { value: "race", labelKey: "typeRace" },
+  { value: "camp", labelKey: "typeCamp" },
+  { value: "community", labelKey: "typeCommunity" },
+];
+
+export default function EventsPageClient({ events }: Props) {
+  const t = useTranslations("events");
   const searchParams = useSearchParams();
   const router = useRouter();
-  const t = useTranslations("events");
-  const tRoutes = useTranslations("routes");
 
-  const typeParam = searchParams.get("type");
-  const selectedTypes = useMemo((): EventTypeFilter[] => {
-    if (!typeParam) return [...EVENT_TYPES];
-    const parsed = typeParam
-      .split(",")
-      .filter((x): x is EventTypeFilter =>
-        (EVENT_TYPES as readonly string[]).includes(x)
-      );
-    return parsed.length > 0 ? parsed : [...EVENT_TYPES];
-  }, [typeParam]);
+  const typeParam = searchParams.get("type") ?? "";
+  const validType = ["race", "camp", "community"].includes(typeParam) ? typeParam : "";
 
-  const selectedRegions = searchParams.getAll("region");
-  const recurringOnly = searchParams.get("recurring") === "1";
-  const upcomingOnly = searchParams.get("upcoming") === "1";
-
-  const today = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString().slice(0, 10);
-  }, []);
-
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      const typeMatch = selectedTypes.includes(
-        item.type as EventTypeFilter
-      );
-      const regionMatch =
-        selectedRegions.length === 0 || selectedRegions.includes(item.region);
-      const recurringMatch =
-        !recurringOnly ||
-        (item.type === "event" && (item as EventItem).recurring === true);
-      const upcomingMatch =
-        !upcomingOnly ||
-        item.type === "camp" ||
-        (item.type === "event" &&
-          (item as EventItem).date != null &&
-          (item as EventItem).date! >= today);
-      return typeMatch && regionMatch && recurringMatch && upcomingMatch;
-    });
-  }, [items, selectedTypes, selectedRegions, recurringOnly, upcomingOnly, today]);
-
-  const updateUrl = (options: {
-    types?: EventTypeFilter[];
-    regions?: string[];
-    recurring?: boolean;
-    upcoming?: boolean;
-  }) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const types = options.types ?? selectedTypes;
-    const regs = options.regions ?? selectedRegions;
-    const recur = options.recurring ?? recurringOnly;
-    const upc = options.upcoming ?? upcomingOnly;
-
-    params.delete("type");
-    params.delete("region");
-    params.delete("recurring");
-    params.delete("upcoming");
-
-    if (types.length < 2) params.set("type", types.join(","));
-    regs.forEach((r) => params.append("region", r));
-    if (recur) params.set("recurring", "1");
-    if (upc) params.set("upcoming", "1");
-
+  const updateUrl = (type: string) => {
+    const params = new URLSearchParams();
+    if (type) params.set("type", type);
     const query = params.toString();
     router.replace(query ? `/events?${query}` : "/events");
   };
 
-  const toggleType = (type: EventTypeFilter) => {
-    const next = selectedTypes.includes(type)
-      ? selectedTypes.filter((t) => t !== type)
-      : [...selectedTypes, type].sort(
-          (a, b) => EVENT_TYPES.indexOf(a) - EVENT_TYPES.indexOf(b)
-        );
-    updateUrl({ types: next });
-  };
+  const clearAll = () => updateUrl("");
 
-  const toggleRegion = (region: string) => {
-    const next = selectedRegions.includes(region)
-      ? selectedRegions.filter((r) => r !== region)
-      : [...selectedRegions, region];
-    updateUrl({ regions: next });
-  };
+  const hasActiveFilters = validType !== "";
 
-  const clearAll = () =>
-    updateUrl({
-      types: [...EVENT_TYPES],
-      regions: [],
-      recurring: false,
-      upcoming: false,
-    });
+  const typeOptions = TYPE_OPTIONS.map((o) => ({
+    value: o.value,
+    label: t(o.labelKey),
+  }));
 
   return (
     <div className="px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
-        {data.error && (
-          <div
-            role="alert"
-            className="mb-6 rounded-card border border-verter-risky bg-verter-risky/10 px-4 py-3 text-sm text-verter-risky"
-          >
-            {t("loadError")}
-          </div>
-        )}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-heading text-3xl font-bold text-verter-graphite">
@@ -138,42 +60,78 @@ export default function EventsPageClient({ data }: EventsPageClientProps) {
             href="/submit"
             className="inline-flex shrink-0 items-center gap-2 rounded-card border border-verter-border bg-white/70 px-4 py-2 text-sm font-medium text-verter-graphite transition hover:border-verter-muted hover:bg-white"
           >
-            {t("addCtaButton")}
+            {t("addEvent")}
           </Link>
         </div>
 
-        <div className="mt-8">
-          <EventsFilterBar
-            items={items}
-            selectedTypes={selectedTypes}
-            selectedRegions={selectedRegions}
-            recurringOnly={recurringOnly}
-            upcomingOnly={upcomingOnly}
-            onToggleType={toggleType}
-            onToggleRegion={toggleRegion}
-            onRecurringChange={(r) => updateUrl({ recurring: r })}
-            onUpcomingChange={(u) => updateUrl({ upcoming: u })}
-            onClearAll={clearAll}
+        <div className="mt-8 flex flex-wrap gap-4">
+          <FilterSelect
+            label={t("filterByType")}
+            options={typeOptions}
+            selected={validType ? [validType] : []}
+            onChange={(v) => updateUrl(v[0] ?? "")}
+            multiple={false}
           />
         </div>
 
-        <div className="mt-8 space-y-3">
-          {filteredItems.map((item) => (
-            <EventListItem key={item.id} item={item} />
-          ))}
-        </div>
-
-        {filteredItems.length === 0 && (
+        {events.length === 0 ? (
           <EmptyState
             namespace="events"
-            hasActiveFilters={
-              selectedTypes.length < 2 ||
-              selectedRegions.length > 0 ||
-              recurringOnly ||
-              upcomingOnly
-            }
+            hasActiveFilters={hasActiveFilters}
             onClearFilters={clearAll}
           />
+        ) : (
+          <div className="mt-8 space-y-3">
+            {events.map((ev, i) => {
+              const detailHref = ev.slug ? `/events/${ev.slug}` : ev.id ? `/events/${ev.id}` : null;
+              return (
+                <div
+                  key={ev.id ?? i}
+                  className="rounded-card border border-verter-border bg-white/70 p-4"
+                >
+                  {detailHref ? (
+                    <Link
+                      href={detailHref}
+                      className="font-heading font-semibold text-verter-graphite hover:text-verter-forest"
+                    >
+                      {ev.title ?? "—"}
+                    </Link>
+                  ) : (
+                    <h3 className="font-heading font-semibold text-verter-graphite">
+                      {ev.title ?? "—"}
+                    </h3>
+                  )}
+                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-verter-muted">
+                    {ev.date && <span>{String(ev.date)}</span>}
+                    {ev.location && <span>{ev.location}</span>}
+                  </div>
+                  {ev.registration_url && (
+                    <a
+                      href={ev.registration_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-verter-forest hover:underline"
+                    >
+                      {t("register")}
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
 
         <div className="mt-12">
