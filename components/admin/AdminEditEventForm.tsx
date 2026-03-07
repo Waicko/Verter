@@ -11,6 +11,7 @@ type EventRow = {
   location?: string;
   registration_url?: string;
   description?: string;
+  type?: string | null;
   status?: string;
 };
 
@@ -43,6 +44,10 @@ export default function AdminEditEventForm({ eventId }: AdminEditEventFormProps)
           location: ev.location ?? "",
           registration_url: ev.registration_url ?? "",
           description: ev.description ?? "",
+          type:
+            ev.type === "race" || ev.type === "camp" || ev.type === "community"
+              ? ev.type
+              : "race",
           status: ev.status === "published" ? "published" : "draft",
         });
       })
@@ -69,6 +74,7 @@ export default function AdminEditEventForm({ eventId }: AdminEditEventFormProps)
           location: data.location || null,
           registration_url: data.registration_url || null,
           description: data.description || null,
+          type: data.type || "race",
           status: data.status,
         }),
       });

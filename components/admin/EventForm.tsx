@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 
+export type EventType = "race" | "camp" | "community";
+
 export type EventFormData = {
   title: string;
   date: string;
   location: string;
   registration_url: string;
   description: string;
+  type: EventType;
   status: "published" | "draft";
 };
 
@@ -18,8 +21,15 @@ const emptyData: EventFormData = {
   location: "",
   registration_url: "",
   description: "",
+  type: "race",
   status: "published",
 };
+
+const TYPE_OPTIONS: { value: EventType; label: string }[] = [
+  { value: "race", label: "Kisa" },
+  { value: "camp", label: "Leiri" },
+  { value: "community", label: "Yhteislenkki" },
+];
 
 interface EventFormProps {
   mode: "create" | "edit";
@@ -87,6 +97,7 @@ export default function EventForm({
       location: formState.location.trim() || "",
       registration_url: formState.registration_url.trim() || "",
       description: formState.description.trim() || "",
+      type: (formState.type || "race") as EventType,
     });
   };
 
@@ -133,6 +144,24 @@ export default function EventForm({
           required
           className={inputClass}
         />
+      </div>
+
+      <div>
+        <label htmlFor="type" className="block text-sm font-medium text-verter-graphite">
+          Tyyppi
+        </label>
+        <select
+          id="type"
+          value={formState.type ?? "race"}
+          onChange={(e) => update("type", e.target.value as EventType)}
+          className={inputClass}
+        >
+          {TYPE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>

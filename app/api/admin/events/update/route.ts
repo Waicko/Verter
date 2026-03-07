@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     location?: string;
     registration_url?: string;
     description?: string;
+    type?: string;
     status?: string;
   };
   try {
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest) {
   }
 
   const slug = slugify(title);
+  const eventType =
+    body.type === "race" || body.type === "camp" || body.type === "community"
+      ? body.type
+      : "race";
   const payload = {
     title,
     slug,
@@ -44,6 +49,7 @@ export async function POST(request: NextRequest) {
     location: body.location?.trim() || null,
     registration_url: body.registration_url?.trim() || null,
     description: body.description?.trim() || null,
+    type: eventType,
     status: body.status === "published" ? "published" : "draft",
   };
 

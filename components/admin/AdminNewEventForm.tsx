@@ -39,6 +39,7 @@ export default function AdminNewEventForm() {
           location: data.location || null,
           registration_url: data.registration_url || null,
           description: data.description || null,
+          type: data.type || "race",
           status: data.status,
         }),
       });
