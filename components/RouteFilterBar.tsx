@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { DistanceRange, ElevationRange } from "./FilterBar";
+import type { DistanceRange, ElevationRange } from "@/lib/types/filters";
 
 interface RouteFilterBarProps {
   regions: string[];
