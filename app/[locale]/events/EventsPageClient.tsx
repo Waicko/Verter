@@ -57,7 +57,7 @@ export default function EventsPageClient({ events }: Props) {
             <p className="mt-2 text-verter-muted">{t("description")}</p>
           </div>
           <Link
-            href="/submit"
+            href="/submit/event"
             className="inline-flex shrink-0 items-center gap-2 rounded-card border border-verter-border bg-white/70 px-4 py-2 text-sm font-medium text-verter-graphite transition hover:border-verter-muted hover:bg-white"
           >
             {t("addEvent")}

@@ -9,6 +9,12 @@ interface AddListCtaProps {
   namespace: Namespace;
 }
 
+const SUBMIT_HREF: Record<Namespace, string> = {
+  routes: "/submit/route",
+  camps: "/submit/event",
+  events: "/submit/event",
+};
+
 export default function AddListCta({ namespace }: AddListCtaProps) {
   const t = useTranslations(namespace);
 
@@ -24,7 +30,7 @@ export default function AddListCta({ namespace }: AddListCtaProps) {
         {t("addCtaText")}
       </p>
       <Link
-        href="/submit"
+        href={SUBMIT_HREF[namespace]}
         className="mt-6 inline-flex items-center justify-center rounded-card bg-verter-forest px-4 py-2 text-sm font-medium text-white hover:opacity-95 active:opacity-90"
       >
         {t("addCtaButton")}

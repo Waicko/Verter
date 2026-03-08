@@ -156,7 +156,7 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Link
-              href="/submit"
+              href="/submit/route"
               className="inline-flex items-center gap-2 rounded-card border border-verter-border bg-white/70 px-4 py-2 text-sm font-medium text-verter-graphite transition hover:border-verter-muted hover:bg-white"
             >
               {t("addCtaButton")}

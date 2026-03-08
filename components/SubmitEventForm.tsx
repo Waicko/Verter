@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "@/i18n/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
-const SUCCESS_MESSAGE = "Kiitos! Tapahtuma lähetettiin tarkistukseen.";
 const ERROR_MESSAGE = "Lähetys epäonnistui. Yritä myöhemmin uudelleen.";
+
+type EventType = "race" | "camp" | "community";
 
 interface FormState {
   title: string;
@@ -12,6 +14,7 @@ interface FormState {
   location: string;
   registration_url: string;
   description: string;
+  event_type: EventType;
   company: string;
 }
 
@@ -21,6 +24,7 @@ const INITIAL: FormState = {
   location: "",
   registration_url: "",
   description: "",
+  event_type: "community",
   company: "",
 };
 
@@ -35,9 +39,9 @@ function isValidUrl(s: string): boolean {
 }
 
 export default function SubmitEventForm() {
+  const router = useRouter();
   const [data, setData] = useState<FormState>(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const update = (k: keyof FormState, v: string) => {
@@ -74,6 +78,7 @@ export default function SubmitEventForm() {
         location: data.location.trim() || null,
         description: data.description.trim() || null,
         registration_url: data.registration_url.trim() || null,
+        type: data.event_type,
         status: "draft",
       };
       const { error: insertError } = await supabase.from("events").insert(payload);
@@ -83,22 +88,13 @@ export default function SubmitEventForm() {
         return;
       }
 
-      setSuccess(true);
-      setData(INITIAL);
+      router.push("/submit/success");
     } catch (err) {
       setError(err instanceof Error ? err.message : ERROR_MESSAGE);
     } finally {
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="rounded-card border border-verter-forest/30 bg-verter-forest/5 p-6 text-center">
-        <p className="font-semibold text-verter-forest">{SUCCESS_MESSAGE}</p>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,6 +120,22 @@ export default function SubmitEventForm() {
           className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-forest focus:outline-none focus:ring-1 focus:ring-verter-forest"
           placeholder="esim. Nuuksion polkujuoksukilpailu"
         />
+      </div>
+
+      <div>
+        <label htmlFor="event_type" className="block text-sm font-medium text-verter-graphite">
+          Tyyppi
+        </label>
+        <select
+          id="event_type"
+          value={data.event_type}
+          onChange={(e) => update("event_type", e.target.value as EventType)}
+          className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-forest focus:outline-none focus:ring-1 focus:ring-verter-forest"
+        >
+          <option value="community">Yhteisötapahtuma</option>
+          <option value="race">Kilpailu</option>
+          <option value="camp">Leiri</option>
+        </select>
       </div>
 
       <div>
