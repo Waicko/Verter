@@ -308,7 +308,7 @@
   },
   "admin": {
     "dashboardTitle": "Content Studio",
-    "dashboardDescription": "Hallinnoi julkaistuja, odottavia ja luonnoksia.",
+    "dashboardDescription": "Hallinnoi tapahtumia, reittejä, podcastia, sisältöä ja tiimiä.",
     "tabPublished": "Julkaistut",
     "tabPending": "Odottavat",
     "tabDrafts": "Luonnokset",
@@ -316,7 +316,9 @@
     "sectionRoutes": "Reitit & Polut",
     "sectionEvents": "Tapahtumat",
     "sectionCamps": "Leirit",
+    "sectionPodcast": "Podcast",
     "sectionContent": "Sisältö",
+    "sectionQuickLinks": "Hallinnan osiot",
     "addNew": "Lisää uusi",
     "edit": "Muokkaa",
     "searchPlaceholder": "Hae otsikolla...",

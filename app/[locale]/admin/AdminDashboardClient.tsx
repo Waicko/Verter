@@ -7,10 +7,12 @@ import AdminContentItemCard from "@/components/admin/AdminContentItemCard";
 import AdminTeamCard from "@/components/admin/AdminTeamCard";
 import type { AdminTeamMember } from "@/lib/data/team";
 import type { AdminContentItem } from "@/lib/data/content-items";
+import type { AdminDomainCounts } from "@/lib/data/admin-dashboard";
 
-type Tab = "published" | "pending" | "drafts";
+type Tab = "published" | "drafts";
 
 interface Props {
+  domainCounts: AdminDomainCounts;
   publishedTeam: AdminTeamMember[];
   draftTeam: AdminTeamMember[];
   publishedContent: AdminContentItem[];
@@ -18,6 +20,7 @@ interface Props {
 }
 
 export default function AdminDashboardClient({
+  domainCounts,
   publishedTeam,
   draftTeam,
   publishedContent,
@@ -30,7 +33,6 @@ export default function AdminDashboardClient({
 
   const contentByTab: Record<Tab, AdminContentItem[]> = {
     published: publishedContent,
-    pending: [],
     drafts: draftContent,
   };
   const contentItemsTab = contentByTab[activeTab];
@@ -46,7 +48,6 @@ export default function AdminDashboardClient({
 
   const teamByTab: Record<Tab, AdminTeamMember[]> = {
     published: publishedTeam,
-    pending: [],
     drafts: draftTeam,
   };
   const teamMembers = teamByTab[activeTab];
@@ -62,8 +63,15 @@ export default function AdminDashboardClient({
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "published", label: t("tabPublished") },
-    { id: "pending", label: t("tabPending") },
     { id: "drafts", label: t("tabDrafts") },
+  ];
+
+  const sectionCards = [
+    { href: `/${locale}/admin/events`, label: t("sectionEvents"), counts: domainCounts.events },
+    { href: `/${locale}/admin/routes`, label: t("sectionRoutes"), counts: domainCounts.routes },
+    { href: `/${locale}/admin/podcast`, label: t("sectionPodcast"), counts: domainCounts.podcast },
+    { href: `/${locale}/admin/content`, label: t("sectionContent"), counts: domainCounts.content },
+    { href: `/${locale}/admin/team`, label: t("sectionTeam"), counts: domainCounts.team },
   ];
 
   const Section = ({
@@ -100,6 +108,29 @@ export default function AdminDashboardClient({
       </h1>
       <p className="mt-2 text-verter-muted">{t("dashboardDescription")}</p>
 
+      {/* Admin section links */}
+      <section className="mt-8">
+        <h2 className="mb-4 font-heading text-lg font-semibold text-verter-graphite">
+          {t("sectionQuickLinks")}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {sectionCards.map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              className="flex flex-col rounded-card border border-verter-border bg-white p-4 transition hover:border-verter-forest hover:bg-verter-snow/30"
+            >
+              <span className="font-medium text-verter-graphite">{card.label}</span>
+              <span className="mt-1 text-sm text-verter-muted">
+                {"hidden" in card.counts
+                  ? `${card.counts.published} / ${card.counts.hidden}`
+                  : `${card.counts.published} / ${card.counts.draft}`}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <div className="mt-8">
         <div className="flex flex-wrap items-center gap-4 border-b border-verter-border pb-4">
           {tabs.map((tab) => (
@@ -131,11 +162,7 @@ export default function AdminDashboardClient({
           title={t("sectionContent")}
           addNewHref={`/${locale}/admin/content/new?type=blog`}
         >
-          {activeTab === "pending" ? (
-            <p className="col-span-full py-8 text-center text-sm text-verter-muted">
-              {t("contentPublishedOnly")}
-            </p>
-          ) : contentFiltered.length === 0 ? (
+          {contentFiltered.length === 0 ? (
             <p className="col-span-full py-8 text-center text-sm text-verter-muted">
               {t("noItems")}
             </p>
@@ -150,11 +177,7 @@ export default function AdminDashboardClient({
           title={t("sectionTeam")}
           addNewHref={`/${locale}/admin/team/new`}
         >
-          {activeTab === "pending" ? (
-            <p className="col-span-full py-8 text-center text-sm text-verter-muted">
-              {t("teamNoPending")}
-            </p>
-          ) : teamFiltered.length === 0 ? (
+          {teamFiltered.length === 0 ? (
             <p className="col-span-full py-8 text-center text-sm text-verter-muted">
               {t("noItems")}
             </p>

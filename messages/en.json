@@ -308,7 +308,7 @@
   },
   "admin": {
     "dashboardTitle": "Content Studio",
-    "dashboardDescription": "Manage published, pending and draft items.",
+    "dashboardDescription": "Manage events, routes, podcast, content and team.",
     "tabPublished": "Published",
     "tabPending": "Pending",
     "tabDrafts": "Drafts",
@@ -316,7 +316,9 @@
     "sectionRoutes": "Routes & Trails",
     "sectionEvents": "Events",
     "sectionCamps": "Camps",
+    "sectionPodcast": "Podcast",
     "sectionContent": "Content",
+    "sectionQuickLinks": "Admin sections",
     "addNew": "Add new",
     "edit": "Edit",
     "searchPlaceholder": "Search by title...",

@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { getAdminTeamMembers } from "@/lib/data/team";
 import { getAdminContentItems } from "@/lib/data/content-items";
+import { getAdminDomainCounts } from "@/lib/data/admin-dashboard";
 import AdminDashboardClient from "./AdminDashboardClient";
 
 type Props = {
@@ -12,11 +13,13 @@ export default async function AdminDashboardPage({ params }: Props) {
   setRequestLocale(locale);
 
   const [
+    domainCounts,
     publishedTeam,
     draftTeam,
     publishedContent,
     draftContent,
   ] = await Promise.all([
+    getAdminDomainCounts(),
     getAdminTeamMembers("published"),
     getAdminTeamMembers("draft"),
     getAdminContentItems("published"),
@@ -25,6 +28,7 @@ export default async function AdminDashboardPage({ params }: Props) {
 
   return (
     <AdminDashboardClient
+      domainCounts={domainCounts}
       publishedTeam={publishedTeam}
       draftTeam={draftTeam}
       publishedContent={publishedContent}
