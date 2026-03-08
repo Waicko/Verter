@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getAdminContentItems } from "@/lib/data/content-items";
 import AdminContentItemCard from "@/components/admin/AdminContentItemCard";
 type Props = { params: Promise<{ locale: string }> };

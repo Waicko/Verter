@@ -90,6 +90,7 @@ export default function ContentItemForm({
       if (mode === "edit" && initial?.id) {
         const res = await fetch(`/api/admin/content/${initial.id}`, {
           method: "PATCH",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -101,6 +102,7 @@ export default function ContentItemForm({
       } else {
         const res = await fetch("/api/admin/content", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -122,6 +124,7 @@ export default function ContentItemForm({
     try {
       const res = await fetch(`/api/admin/content/${initial.id}`, {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "archived" }),
       });

@@ -58,6 +58,7 @@ export default function TeamForm({ initial, locale, mode }: TeamFormProps) {
       if (mode === "edit" && initial?.id) {
         const res = await fetch(`/api/admin/team/${initial.id}`, {
           method: "PATCH",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -69,6 +70,7 @@ export default function TeamForm({ initial, locale, mode }: TeamFormProps) {
       } else {
         const res = await fetch("/api/admin/team", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });

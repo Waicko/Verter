@@ -42,6 +42,7 @@ export async function getPublishedContentItems(): Promise<ContentItemPublic[]> {
       .from("content_items")
       .select("*")
       .eq("status", "published")
+      .neq("content_type", "podcast")
       .order("published_at", { ascending: false, nullsFirst: false });
 
     if (error || !rows) return [];
