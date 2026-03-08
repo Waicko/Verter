@@ -38,6 +38,12 @@ export default function AdminNewRouteForm() {
           route_origin_type: data.route_origin_type?.trim() || null,
           route_origin_name: data.route_origin_name?.trim() || null,
           route_origin_url: data.route_origin_url?.trim() || null,
+          submitted_by_strava_url: data.submitted_by_strava_url?.trim() || null,
+          approved_by_verter: data.approved_by_verter ?? false,
+          approved_by_name: data.approved_by_name?.trim() || null,
+          approved_at: data.approved_at ? new Date(data.approved_at).toISOString() : null,
+          tested_by_team: data.tested_by_team ?? false,
+          tested_notes: data.tested_notes?.trim() || null,
         }),
       });
 

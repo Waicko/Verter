@@ -90,7 +90,20 @@
     "downloadGpx": "Download GPX",
     "elevationProfile": "Elevation profile",
     "noGpxAvailable": "No GPX available for this route.",
-    "routeGpxDisclaimer": "Route and GPX data are provided for informational purposes. Correteness of route safety, passability, usage rights and timeliness remain the responsibility of the user. Verter is not liable for route use, terrain conditions, incorrect data or GPX track suitability."
+    "routeGpxDisclaimer": "Route and GPX data are provided for informational purposes. Correteness of route safety, passability, usage rights and timeliness remain the responsibility of the user. Verter is not liable for route use, terrain conditions, incorrect data or GPX track suitability.",
+    "trust": {
+      "sectionTitle": "Verification and approval",
+      "submittedByStravaUrl": "Strava profile URL (submitted by)",
+      "approvedByVerter": "Approved by Verter",
+      "approvedByName": "Approved by (name)",
+      "approvedAt": "Approval date",
+      "testedByTeam": "Tested by team",
+      "testedNotes": "Test notes",
+      "testedNotesPlaceholder": "Notes from route testing…",
+      "stravaProfileLinked": "Strava profile linked",
+      "approvedByVerterLabel": "Approved by Verter",
+      "testedByTeamNote": "Tested by team:"
+    }
   },
   "winter": {
     "good": "Good",

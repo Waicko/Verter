@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPublishedRouteBySlug } from "@/lib/data/routes-db";
 import RouteDetailWithGpx from "@/components/routes/RouteDetailWithGpx";
+import RouteTrustBadges from "@/components/routes/RouteTrustBadges";
 import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
 import RouteGpxDisclaimer from "@/components/RouteGpxDisclaimer";
 
@@ -60,6 +61,15 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
           {dbRoute.area && (
             <p className="mt-2 text-verter-muted">{dbRoute.area}</p>
           )}
+          <RouteTrustBadges
+            route={{
+              submitted_by_strava_url: dbRoute.submitted_by_strava_url,
+              approved_by_verter: dbRoute.approved_by_verter,
+              tested_by_team: dbRoute.tested_by_team,
+              tested_notes: dbRoute.tested_notes,
+            }}
+            className="mt-4"
+          />
           <div className="mt-8">
             <RouteDetailWithGpx route={dbRoute} />
           </div>

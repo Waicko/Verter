@@ -14,7 +14,14 @@ export type DbRoute = {
   slug: string;
   created_at: string;
 } & Partial<SourceRightsMetadata> &
-  Partial<RouteOriginMetadata>;
+  Partial<RouteOriginMetadata> & {
+    submitted_by_strava_url?: string | null;
+    approved_by_verter?: boolean | null;
+    approved_by_name?: string | null;
+    approved_at?: string | null;
+    tested_by_team?: boolean | null;
+    tested_notes?: string | null;
+  };
 
 /**
  * Returns the public URL for a GPX file in the gpx bucket.

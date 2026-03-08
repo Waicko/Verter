@@ -88,7 +88,20 @@
     "downloadGpx": "Lataa GPX",
     "elevationProfile": "Korkeusprofiili",
     "noGpxAvailable": "Reitille ei ole GPX-tiedostoa.",
-    "routeGpxDisclaimer": "Reitti- ja GPX-tiedot tarjotaan informatiivisessa tarkoituksessa. Reitin turvallisuuden, kulkukelpoisuuden, käyttöoikeuksien ja ajantasaisuuden varmistaminen on aina kulkijan vastuulla. Verter ei vastaa reitin käytöstä, maasto-olosuhteista, virheellisistä tiedoista tai GPX-jäljen soveltuvuudesta."
+    "routeGpxDisclaimer": "Reitti- ja GPX-tiedot tarjotaan informatiivisessa tarkoituksessa. Reitin turvallisuuden, kulkukelpoisuuden, käyttöoikeuksien ja ajantasaisuuden varmistaminen on aina kulkijan vastuulla. Verter ei vastaa reitin käytöstä, maasto-olosuhteista, virheellisistä tiedoista tai GPX-jäljen soveltuvuudesta.",
+    "trust": {
+      "sectionTitle": "Varmennus ja hyväksyntä",
+      "submittedByStravaUrl": "Strava-profiilin URL (ehdotettu)",
+      "approvedByVerter": "Hyväksytty Verterissä",
+      "approvedByName": "Hyväksyjän nimi",
+      "approvedAt": "Hyväksymisaika",
+      "testedByTeam": "Testattu tiimin toimesta",
+      "testedNotes": "Testaushuomiot",
+      "testedNotesPlaceholder": "Huomiot reitin testauksesta…",
+      "stravaProfileLinked": "Strava-profiili liitetty",
+      "approvedByVerterLabel": "Hyväksytty Verterissä",
+      "testedByTeamNote": "Testattu tiimin toimesta:"
+    }
   },
   "winter": {
     "good": "Hyvä",

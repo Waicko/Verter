@@ -6,6 +6,9 @@ import { Link } from "@/i18n/navigation";
 import SourceRightsMetadataSection, {
   type MetadataFormValues,
 } from "./SourceRightsMetadataSection";
+import RouteTrustVerificationSection, {
+  type RouteTrustVerificationValues,
+} from "./RouteTrustVerificationSection";
 
 export type RouteFormData = {
   title: string;
@@ -16,7 +19,8 @@ export type RouteFormData = {
   slug: string;
   status: "published" | "draft";
   gpx_path: string;
-} & MetadataFormValues;
+} & MetadataFormValues &
+  RouteTrustVerificationValues;
 
 const defaultMetadata: MetadataFormValues = {
   source_type: "",
@@ -33,8 +37,18 @@ const defaultMetadata: MetadataFormValues = {
   route_origin_url: "",
 };
 
+const defaultTrustVerification: RouteTrustVerificationValues = {
+  submitted_by_strava_url: "",
+  approved_by_verter: false,
+  approved_by_name: "",
+  approved_at: "",
+  tested_by_team: false,
+  tested_notes: "",
+};
+
 const emptyData: RouteFormData = {
   ...defaultMetadata,
+  ...defaultTrustVerification,
   title: "",
   area: "",
   distance_km: "",
@@ -196,6 +210,12 @@ export default function RouteForm({
       route_origin_type: formState.route_origin_type || "",
       route_origin_name: formState.route_origin_name?.trim() || "",
       route_origin_url: formState.route_origin_url?.trim() || "",
+      submitted_by_strava_url: formState.submitted_by_strava_url?.trim() || "",
+      approved_by_verter: formState.approved_by_verter ?? false,
+      approved_by_name: formState.approved_by_name?.trim() || "",
+      approved_at: formState.approved_at || "",
+      tested_by_team: formState.tested_by_team ?? false,
+      tested_notes: formState.tested_notes?.trim() || "",
     });
   };
 
@@ -428,6 +448,24 @@ export default function RouteForm({
           }))
         }
         includeRouteOrigin={true}
+        inputClass={inputClass}
+      />
+
+      <RouteTrustVerificationSection
+        values={{
+          submitted_by_strava_url: formState.submitted_by_strava_url ?? "",
+          approved_by_verter: formState.approved_by_verter ?? false,
+          approved_by_name: formState.approved_by_name ?? "",
+          approved_at: formState.approved_at ?? "",
+          tested_by_team: formState.tested_by_team ?? false,
+          tested_notes: formState.tested_notes ?? "",
+        }}
+        onChange={(v) =>
+          setFormState((prev) => ({
+            ...prev,
+            ...v,
+          }))
+        }
         inputClass={inputClass}
       />
 

@@ -26,6 +26,12 @@ type RouteRow = {
   route_origin_type?: string | null;
   route_origin_name?: string | null;
   route_origin_url?: string | null;
+  submitted_by_strava_url?: string | null;
+  approved_by_verter?: boolean | null;
+  approved_by_name?: string | null;
+  approved_at?: string | null;
+  tested_by_team?: boolean | null;
+  tested_notes?: string | null;
 };
 
 interface AdminEditRouteFormProps {
@@ -51,6 +57,9 @@ export default function AdminEditRouteForm({ routeId }: AdminEditRouteFormProps)
         return res.json() as Promise<RouteRow>;
       })
       .then((r) => {
+        const approvedAt = r.approved_at
+          ? new Date(r.approved_at).toISOString().slice(0, 16)
+          : "";
         setInitialData({
           title: r.title ?? "",
           area: r.area ?? "",
@@ -60,6 +69,12 @@ export default function AdminEditRouteForm({ routeId }: AdminEditRouteFormProps)
           slug: r.slug ?? "",
           status: r.status === "published" ? "published" : "draft",
           gpx_path: r.gpx_path ?? "",
+          submitted_by_strava_url: r.submitted_by_strava_url ?? "",
+          approved_by_verter: r.approved_by_verter ?? false,
+          approved_by_name: r.approved_by_name ?? "",
+          approved_at: approvedAt,
+          tested_by_team: r.tested_by_team ?? false,
+          tested_notes: r.tested_notes ?? "",
         });
       })
       .catch((err) => {
@@ -100,6 +115,12 @@ export default function AdminEditRouteForm({ routeId }: AdminEditRouteFormProps)
           route_origin_type: data.route_origin_type?.trim() || null,
           route_origin_name: data.route_origin_name?.trim() || null,
           route_origin_url: data.route_origin_url?.trim() || null,
+          submitted_by_strava_url: data.submitted_by_strava_url?.trim() || null,
+          approved_by_verter: data.approved_by_verter ?? false,
+          approved_by_name: data.approved_by_name?.trim() || null,
+          approved_at: data.approved_at ? new Date(data.approved_at).toISOString() : null,
+          tested_by_team: data.tested_by_team ?? false,
+          tested_notes: data.tested_notes?.trim() || null,
         }),
       });
 
