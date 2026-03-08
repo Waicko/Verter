@@ -83,6 +83,7 @@ export default function PodcastGuestForm({
       if (mode === "edit" && initial?.id) {
         const res = await fetch(`/api/admin/podcast/guests/${initial.id}`, {
           method: "PATCH",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -94,6 +95,7 @@ export default function PodcastGuestForm({
       } else {
         const res = await fetch("/api/admin/podcast/guests", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -13,8 +15,27 @@ interface AdminContentItemCardProps {
 export default function AdminContentItemCard({ item }: AdminContentItemCardProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
   const editHref = `/${locale}/admin/content/${item.id}/edit`;
   const previewHref = `/${locale}/content/${item.slug}`;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(t("deleteConfirm"))) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/content/${item.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) router.refresh();
+      else alert((await res.json().catch(() => ({}))).error ?? "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const statusClass =
     item.status === "published"
@@ -45,6 +66,14 @@ export default function AdminContentItemCard({ item }: AdminContentItemCardProps
         >
           {t("edit")}
         </Link>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="rounded-pill border border-verter-risky bg-white px-3 py-1.5 text-xs font-medium text-verter-risky hover:bg-verter-risky/5 disabled:opacity-50"
+        >
+          {deleting ? "…" : t("delete")}
+        </button>
       </div>
       <Link href={editHref} className={`block p-4 ${cardClass}`}>
         <span className="text-xs font-medium uppercase tracking-wider text-verter-muted">

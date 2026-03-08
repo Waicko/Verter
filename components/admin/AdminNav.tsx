@@ -26,7 +26,7 @@ export default function AdminNav() {
         {t("navDashboard")}
       </Link>
       <Link
-        href="/admin/team/new"
+        href="/admin/team"
         className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
       >
         {t("navTeam")}

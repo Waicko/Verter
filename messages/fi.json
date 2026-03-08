@@ -349,6 +349,8 @@
     "archiveConfirm": "Arkistoidaanko? Kohde siirtyy arkistoon.",
     "unpublishConfirm": "Poistetaanko julkaisu? Kohde siirtyy luonnokseksi.",
     "restoreConfirm": "Palautetaanko luonnokseksi?",
+    "delete": "Poista",
+    "deleteConfirm": "Poistetaanko tämä kohde? Tätä ei voi perua.",
     "approve": "Hyväksy",
     "reject": "Hylkää",
     "rejectConfirm": "Hylkää varmasti",

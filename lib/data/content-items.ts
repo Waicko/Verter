@@ -52,7 +52,7 @@ export async function getPublishedContentItems(): Promise<ContentItemPublic[]> {
   }
 }
 
-/** Fetch content by slug for public detail */
+/** Fetch content by slug for public detail. Excludes podcast-type (podcasts live on /podcast). */
 export async function getContentBySlug(
   slug: string
 ): Promise<ContentItemDetail | null> {
@@ -64,6 +64,7 @@ export async function getContentBySlug(
       .from("content_items")
       .select("*")
       .eq("status", "published")
+      .neq("content_type", "podcast")
       .eq("slug", slug)
       .single();
 

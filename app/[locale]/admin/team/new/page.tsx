@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import TeamForm from "@/components/admin/TeamForm";
 
 type Props = {
@@ -13,6 +14,12 @@ export default async function NewTeamPage({ params }: Props) {
 
   return (
     <div>
+      <Link
+        href="/admin/team"
+        className="mb-4 inline-block text-sm font-medium text-verter-muted hover:text-verter-graphite"
+      >
+        ← {t("sectionTeam")}
+      </Link>
       <h1 className="font-heading text-3xl font-bold text-verter-graphite">
         {t("team.createTitle")}
       </h1>

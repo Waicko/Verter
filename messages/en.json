@@ -350,6 +350,8 @@
     "archiveConfirm": "Archive this item? It will be moved to archive.",
     "unpublishConfirm": "Unpublish? Item will become draft.",
     "restoreConfirm": "Restore to draft?",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this item? This cannot be undone.",
     "approve": "Approve",
     "reject": "Reject",
     "rejectConfirm": "Reject",

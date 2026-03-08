@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import TeamForm from "@/components/admin/TeamForm";
 import type { DbTeamMember } from "@/lib/db/team-types";
@@ -21,11 +21,12 @@ export default function EditTeamClient({ member, locale }: Props) {
     if (!confirm(t("archiveConfirm"))) return;
     const res = await fetch(`/api/admin/team/${member.id}`, {
       method: "PATCH",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "archived" }),
     });
     if (res.ok) {
-      router.push(`/${locale}/admin`);
+      router.push(`/${locale}/admin/team`);
     }
   };
 
@@ -49,6 +50,12 @@ export default function EditTeamClient({ member, locale }: Props) {
 
   return (
     <div>
+      <Link
+        href="/admin/team"
+        className="mb-4 inline-block text-sm font-medium text-verter-muted hover:text-verter-graphite"
+      >
+        ← {t("sectionTeam")}
+      </Link>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-bold text-verter-graphite">
@@ -92,6 +99,7 @@ export default function EditTeamClient({ member, locale }: Props) {
                 if (!confirm(t("restoreConfirm"))) return;
                 const res = await fetch(`/api/admin/team/${member.id}`, {
                   method: "PATCH",
+                  credentials: "include",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ status: "draft" }),
                 });

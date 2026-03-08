@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -13,7 +15,26 @@ interface AdminTeamCardProps {
 export default function AdminTeamCard({ member }: AdminTeamCardProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
   const editHref = `/${locale}/admin/team/${member.id}/edit`;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(t("deleteConfirm"))) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/team/${member.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) router.refresh();
+      else alert((await res.json().catch(() => ({}))).error ?? "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const statusColors: Record<string, string> = {
     published: "bg-verter-good/20 text-verter-good",
@@ -37,6 +58,14 @@ export default function AdminTeamCard({ member }: AdminTeamCardProps) {
         >
           {t("edit")}
         </Link>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="rounded-pill border border-verter-risky bg-white px-3 py-1.5 text-xs font-medium text-verter-risky hover:bg-verter-risky/5 disabled:opacity-50"
+        >
+          {deleting ? "…" : t("delete")}
+        </button>
       </div>
       <Link
         href={editHref}
