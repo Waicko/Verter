@@ -27,6 +27,15 @@ export default function AdminNewEventForm() {
           description: data.description || null,
           type: data.type || "race",
           status: data.status,
+          source_type: data.source_type?.trim() || null,
+          source_name: data.source_name?.trim() || null,
+          source_url: data.source_url?.trim() || null,
+          submitted_by_name: data.submitted_by_name?.trim() || null,
+          submitted_by_email: data.submitted_by_email?.trim() || null,
+          rights_basis: data.rights_basis?.trim() || null,
+          license_name: data.license_name?.trim() || null,
+          license_url: data.license_url?.trim() || null,
+          verification_status: data.verification_status?.trim() || null,
         }),
       });
 

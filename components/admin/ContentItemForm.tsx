@@ -7,6 +7,9 @@ import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import type { DbContentItem, DbContentItemInsert } from "@/lib/db/content-types";
 import { cardClass, primaryBtn, secondaryBtn } from "@/lib/styles";
+import SourceRightsMetadataSection, {
+  type MetadataFormValues,
+} from "./SourceRightsMetadataSection";
 
 type ContentType = "blog" | "review" | "podcast" | "comparison";
 type FormData = {
@@ -21,7 +24,7 @@ type FormData = {
   episode_url: string;
   published_at: string;
   status: "draft" | "published" | "archived";
-};
+} & Omit<MetadataFormValues, "route_origin_type" | "route_origin_name" | "route_origin_url">;
 
 interface ContentItemFormProps {
   initial?: Partial<DbContentItem> | null;
@@ -63,9 +66,18 @@ export default function ContentItemForm({
     episode_url: initial?.episode_url ?? "",
     published_at: initial?.published_at ?? "",
     status: (initial?.status as FormData["status"]) ?? "draft",
+    source_type: String((initial as Record<string, unknown>)?.source_type ?? ""),
+    source_name: String((initial as Record<string, unknown>)?.source_name ?? ""),
+    source_url: String((initial as Record<string, unknown>)?.source_url ?? ""),
+    submitted_by_name: String((initial as Record<string, unknown>)?.submitted_by_name ?? ""),
+    submitted_by_email: String((initial as Record<string, unknown>)?.submitted_by_email ?? ""),
+    rights_basis: String((initial as Record<string, unknown>)?.rights_basis ?? ""),
+    license_name: String((initial as Record<string, unknown>)?.license_name ?? ""),
+    license_url: String((initial as Record<string, unknown>)?.license_url ?? ""),
+    verification_status: String((initial as Record<string, unknown>)?.verification_status ?? ""),
   }));
 
-  const buildPayload = (status: "draft" | "published"): DbContentItemInsert => {
+  const buildPayload = (status: "draft" | "published"): DbContentItemInsert & Record<string, unknown> => {
     const slug = data.slug.trim() || slugify(data.title);
     return {
       title: data.title.trim(),
@@ -79,6 +91,15 @@ export default function ContentItemForm({
       episode_url: data.content_type === "podcast" ? (data.episode_url.trim() || null) : null,
       published_at: data.published_at.trim() || null,
       status,
+      source_type: data.source_type?.trim() || null,
+      source_name: data.source_name?.trim() || null,
+      source_url: data.source_url?.trim() || null,
+      submitted_by_name: data.submitted_by_name?.trim() || null,
+      submitted_by_email: data.submitted_by_email?.trim() || null,
+      rights_basis: data.rights_basis?.trim() || null,
+      license_name: data.license_name?.trim() || null,
+      license_url: data.license_url?.trim() || null,
+      verification_status: data.verification_status?.trim() || null,
     };
   };
 
@@ -334,6 +355,35 @@ export default function ContentItemForm({
               </div>
             </div>
           </div>
+          <SourceRightsMetadataSection
+            values={{
+              source_type: data.source_type ?? "",
+              source_name: data.source_name ?? "",
+              source_url: data.source_url ?? "",
+              submitted_by_name: data.submitted_by_name ?? "",
+              submitted_by_email: data.submitted_by_email ?? "",
+              rights_basis: data.rights_basis ?? "",
+              license_name: data.license_name ?? "",
+              license_url: data.license_url ?? "",
+              verification_status: data.verification_status ?? "",
+            }}
+            onChange={(v) =>
+              setData((prev) => ({
+                ...prev,
+                source_type: v.source_type,
+                source_name: v.source_name,
+                source_url: v.source_url,
+                submitted_by_name: v.submitted_by_name,
+                submitted_by_email: v.submitted_by_email,
+                rights_basis: v.rights_basis,
+                license_name: v.license_name,
+                license_url: v.license_url,
+                verification_status: v.verification_status,
+              }))
+            }
+            includeRouteOrigin={false}
+            inputClass="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+          />
           <div className="flex flex-wrap gap-4">
             <button
               type="button"

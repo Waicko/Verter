@@ -6,6 +6,7 @@ import {
   getPublishedEventById,
 } from "@/lib/data/events-db";
 import EventRequestForm from "@/components/EventRequestForm";
+import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
 
 interface EventDetailPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -93,6 +94,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <p className="mt-2 text-verter-graphite">{ev.description}</p>
           </div>
         )}
+
+        <SourceMetadataDisplay
+          metadata={{
+            source_name: ev.source_name ?? undefined,
+            source_type: ev.source_type ?? undefined,
+            verification_status: ev.verification_status ?? undefined,
+          }}
+        />
 
         <div className="mt-12 border-t border-verter-border pt-12">
           <h2 className="font-heading text-xl font-semibold text-verter-graphite">

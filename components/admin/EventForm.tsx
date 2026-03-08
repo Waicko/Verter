@@ -2,8 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
+import SourceRightsMetadataSection, {
+  type MetadataFormValues,
+} from "./SourceRightsMetadataSection";
 
 export type EventType = "race" | "camp" | "community";
+
+const defaultMetadata: Omit<MetadataFormValues, "route_origin_type" | "route_origin_name" | "route_origin_url"> = {
+  source_type: "",
+  source_name: "",
+  source_url: "",
+  submitted_by_name: "",
+  submitted_by_email: "",
+  rights_basis: "",
+  license_name: "",
+  license_url: "",
+  verification_status: "",
+};
 
 export type EventFormData = {
   title: string;
@@ -13,9 +28,10 @@ export type EventFormData = {
   description: string;
   type: EventType;
   status: "published" | "draft";
-};
+} & typeof defaultMetadata;
 
 const emptyData: EventFormData = {
+  ...defaultMetadata,
   title: "",
   date: "",
   location: "",
@@ -98,6 +114,15 @@ export default function EventForm({
       registration_url: formState.registration_url.trim() || "",
       description: formState.description.trim() || "",
       type: (formState.type || "race") as EventType,
+      source_type: formState.source_type || "",
+      source_name: formState.source_name?.trim() || "",
+      source_url: formState.source_url?.trim() || "",
+      submitted_by_name: formState.submitted_by_name?.trim() || "",
+      submitted_by_email: formState.submitted_by_email?.trim() || "",
+      rights_basis: formState.rights_basis || "",
+      license_name: formState.license_name?.trim() || "",
+      license_url: formState.license_url?.trim() || "",
+      verification_status: formState.verification_status || "",
     });
   };
 
@@ -239,6 +264,36 @@ export default function EventForm({
           </select>
         </div>
       )}
+
+      <SourceRightsMetadataSection
+        values={{
+          source_type: formState.source_type ?? "",
+          source_name: formState.source_name ?? "",
+          source_url: formState.source_url ?? "",
+          submitted_by_name: formState.submitted_by_name ?? "",
+          submitted_by_email: formState.submitted_by_email ?? "",
+          rights_basis: formState.rights_basis ?? "",
+          license_name: formState.license_name ?? "",
+          license_url: formState.license_url ?? "",
+          verification_status: formState.verification_status ?? "",
+        }}
+        onChange={(v) =>
+          setFormState((prev) => ({
+            ...prev,
+            source_type: v.source_type,
+            source_name: v.source_name,
+            source_url: v.source_url,
+            submitted_by_name: v.submitted_by_name,
+            submitted_by_email: v.submitted_by_email,
+            rights_basis: v.rights_basis,
+            license_name: v.license_name,
+            license_url: v.license_url,
+            verification_status: v.verification_status,
+          }))
+        }
+        includeRouteOrigin={false}
+        inputClass={inputClass}
+      />
 
       <div className="flex gap-3">
         <button

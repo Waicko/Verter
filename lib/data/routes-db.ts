@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+import type { SourceRightsMetadata, RouteOriginMetadata } from "@/lib/metadata-types";
+
 export type DbRoute = {
   id: string;
   title: string;
@@ -11,7 +13,8 @@ export type DbRoute = {
   status: string;
   slug: string;
   created_at: string;
-};
+} & Partial<SourceRightsMetadata> &
+  Partial<RouteOriginMetadata>;
 
 /**
  * Returns the public URL for a GPX file in the gpx bucket.

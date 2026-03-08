@@ -1,3 +1,5 @@
+import type { SourceRightsMetadata } from "@/lib/metadata-types";
+
 /** Supabase content_items table row */
 export type DbContentItem = {
   id: string;
@@ -14,7 +16,7 @@ export type DbContentItem = {
   status: "draft" | "published" | "archived";
   created_at: string;
   updated_at: string;
-};
+} & Partial<SourceRightsMetadata>;
 
 export type DbContentItemInsert = Omit<DbContentItem, "id" | "created_at" | "updated_at"> & {
   id?: string;

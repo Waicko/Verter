@@ -16,6 +16,9 @@ export type ContentItemPublic = {
 export type ContentItemDetail = ContentItemPublic & {
   body: string;
   episode_url: string | null;
+  source_name?: string | null;
+  source_type?: string | null;
+  verification_status?: string | null;
 };
 
 function rowToPublic(row: DbContentItem): ContentItemPublic {
@@ -75,6 +78,10 @@ export async function getContentBySlug(
       ...rowToPublic(r),
       body: r.body ?? "",
       episode_url: r.episode_url,
+      source_name: (r as DbContentItem & { source_name?: string | null }).source_name ?? null,
+      source_type: (r as DbContentItem & { source_type?: string | null }).source_type ?? null,
+      verification_status:
+        (r as DbContentItem & { verification_status?: string | null }).verification_status ?? null,
     };
   } catch {
     return null;

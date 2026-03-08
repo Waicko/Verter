@@ -15,6 +15,15 @@ export async function POST(request: NextRequest) {
     description?: string;
     type?: string;
     status?: string;
+    source_type?: string;
+    source_name?: string;
+    source_url?: string;
+    submitted_by_name?: string;
+    submitted_by_email?: string;
+    rights_basis?: string;
+    license_name?: string;
+    license_url?: string;
+    verification_status?: string;
   };
   try {
     body = await request.json();
@@ -45,6 +54,15 @@ export async function POST(request: NextRequest) {
     description: body.description?.trim() || null,
     type: eventType,
     status: body.status === "draft" ? "draft" : "published",
+    source_type: body.source_type?.trim() || null,
+    source_name: body.source_name?.trim() || null,
+    source_url: body.source_url?.trim() || null,
+    submitted_by_name: body.submitted_by_name?.trim() || null,
+    submitted_by_email: body.submitted_by_email?.trim() || null,
+    rights_basis: body.rights_basis?.trim() || null,
+    license_name: body.license_name?.trim() || null,
+    license_url: body.license_url?.trim() || null,
+    verification_status: body.verification_status?.trim() || null,
   };
 
   const supabase = getSupabaseServerClient();

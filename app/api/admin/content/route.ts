@@ -49,6 +49,15 @@ export async function POST(request: NextRequest) {
       author: body.author ?? null,
       published_at: publishedAt,
       status: body.status ?? "draft",
+      source_type: (body as Record<string, unknown>).source_type ?? null,
+      source_name: (body as Record<string, unknown>).source_name ?? null,
+      source_url: (body as Record<string, unknown>).source_url ?? null,
+      submitted_by_name: (body as Record<string, unknown>).submitted_by_name ?? null,
+      submitted_by_email: (body as Record<string, unknown>).submitted_by_email ?? null,
+      rights_basis: (body as Record<string, unknown>).rights_basis ?? null,
+      license_name: (body as Record<string, unknown>).license_name ?? null,
+      license_url: (body as Record<string, unknown>).license_url ?? null,
+      verification_status: (body as Record<string, unknown>).verification_status ?? null,
     })
     .select("id")
     .single();

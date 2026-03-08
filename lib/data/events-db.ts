@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+import type { SourceRightsMetadata } from "@/lib/metadata-types";
+
 export type EventType = "race" | "camp" | "community";
 
 export type DbEvent = {
@@ -14,7 +16,7 @@ export type DbEvent = {
   status: string;
   created_at: string;
   updated_at: string;
-};
+} & Partial<SourceRightsMetadata>;
 
 export async function getPublishedEvents(
   typeFilter?: EventType | null

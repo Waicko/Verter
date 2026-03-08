@@ -32,6 +32,15 @@ export async function PATCH(
     author: body.author,
     published_at: publishedAt,
     status: body.status,
+    source_type: body.source_type,
+    source_name: body.source_name,
+    source_url: body.source_url,
+    submitted_by_name: body.submitted_by_name,
+    submitted_by_email: body.submitted_by_email,
+    rights_basis: body.rights_basis,
+    license_name: body.license_name,
+    license_url: body.license_url,
+    verification_status: body.verification_status,
   };
   const updatePayload = Object.fromEntries(
     Object.entries(raw).filter(([, v]) => v !== undefined)

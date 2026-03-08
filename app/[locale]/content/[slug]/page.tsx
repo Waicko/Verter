@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import ReactMarkdown from "react-markdown";
 import { getContentBySlug } from "@/lib/data/content-items";
+import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -76,6 +77,14 @@ export default async function ContentDetailPage({ params }: Props) {
             })}
           </time>
         )}
+
+        <SourceMetadataDisplay
+          metadata={{
+            source_name: item.source_name ?? undefined,
+            source_type: item.source_type ?? undefined,
+            verification_status: item.verification_status ?? undefined,
+          }}
+        />
 
         <div className="prose prose-zinc mt-8 max-w-none">
           <p className="text-lg text-verter-muted">{item.excerpt}</p>

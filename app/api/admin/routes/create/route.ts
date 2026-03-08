@@ -26,6 +26,18 @@ export async function POST(request: NextRequest) {
     gpx_path?: string;
     status?: string;
     slug?: string;
+    source_type?: string;
+    source_name?: string;
+    source_url?: string;
+    submitted_by_name?: string;
+    submitted_by_email?: string;
+    rights_basis?: string;
+    license_name?: string;
+    license_url?: string;
+    verification_status?: string;
+    route_origin_type?: string;
+    route_origin_name?: string;
+    route_origin_url?: string;
   };
   try {
     body = await request.json();
@@ -55,6 +67,18 @@ export async function POST(request: NextRequest) {
     gpx_path: body.gpx_path?.trim() || null,
     status: body.status === "draft" ? "draft" : "published",
     slug,
+    source_type: body.source_type?.trim() || null,
+    source_name: body.source_name?.trim() || null,
+    source_url: body.source_url?.trim() || null,
+    submitted_by_name: body.submitted_by_name?.trim() || null,
+    submitted_by_email: body.submitted_by_email?.trim() || null,
+    rights_basis: body.rights_basis?.trim() || null,
+    license_name: body.license_name?.trim() || null,
+    license_url: body.license_url?.trim() || null,
+    verification_status: body.verification_status?.trim() || null,
+    route_origin_type: body.route_origin_type?.trim() || null,
+    route_origin_name: body.route_origin_name?.trim() || null,
+    route_origin_url: body.route_origin_url?.trim() || null,
   };
 
   const supabase = getSupabaseServerClient();

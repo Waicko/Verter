@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPublishedRouteBySlug } from "@/lib/data/routes-db";
 import RouteDetailWithGpx from "@/components/routes/RouteDetailWithGpx";
+import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
+import RouteGpxDisclaimer from "@/components/RouteGpxDisclaimer";
 
 interface RouteDetailPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -61,15 +63,17 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
           <div className="mt-8">
             <RouteDetailWithGpx route={dbRoute} />
           </div>
-          <p className="mt-10 text-xs text-verter-muted">
-            {t("safetyDisclaimer")}{" "}
-            <Link
-              href="/disclaimer"
-              className="underline hover:text-verter-graphite"
-            >
-              {t("safetyDisclaimerMore")}
-            </Link>
-          </p>
+          <SourceMetadataDisplay
+            metadata={{
+              source_name: dbRoute.source_name ?? undefined,
+              source_type: dbRoute.source_type ?? undefined,
+              verification_status: dbRoute.verification_status ?? undefined,
+              route_origin_name: dbRoute.route_origin_name ?? undefined,
+              route_origin_type: dbRoute.route_origin_type ?? undefined,
+            }}
+            includeRouteOrigin
+          />
+          <RouteGpxDisclaimer />
         </div>
       </div>
     );

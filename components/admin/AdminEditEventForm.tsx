@@ -13,6 +13,15 @@ type EventRow = {
   description?: string;
   type?: string | null;
   status?: string;
+  source_type?: string | null;
+  source_name?: string | null;
+  source_url?: string | null;
+  submitted_by_name?: string | null;
+  submitted_by_email?: string | null;
+  rights_basis?: string | null;
+  license_name?: string | null;
+  license_url?: string | null;
+  verification_status?: string | null;
 };
 
 interface AdminEditEventFormProps {
@@ -49,6 +58,15 @@ export default function AdminEditEventForm({ eventId }: AdminEditEventFormProps)
               ? ev.type
               : "race",
           status: ev.status === "published" ? "published" : "draft",
+          source_type: ev.source_type ?? "",
+          source_name: ev.source_name ?? "",
+          source_url: ev.source_url ?? "",
+          submitted_by_name: ev.submitted_by_name ?? "",
+          submitted_by_email: ev.submitted_by_email ?? "",
+          rights_basis: ev.rights_basis ?? "",
+          license_name: ev.license_name ?? "",
+          license_url: ev.license_url ?? "",
+          verification_status: ev.verification_status ?? "",
         });
       })
       .catch((err) => {
@@ -76,6 +94,15 @@ export default function AdminEditEventForm({ eventId }: AdminEditEventFormProps)
           description: data.description || null,
           type: data.type || "race",
           status: data.status,
+          source_type: data.source_type?.trim() || null,
+          source_name: data.source_name?.trim() || null,
+          source_url: data.source_url?.trim() || null,
+          submitted_by_name: data.submitted_by_name?.trim() || null,
+          submitted_by_email: data.submitted_by_email?.trim() || null,
+          rights_basis: data.rights_basis?.trim() || null,
+          license_name: data.license_name?.trim() || null,
+          license_url: data.license_url?.trim() || null,
+          verification_status: data.verification_status?.trim() || null,
         }),
       });
 

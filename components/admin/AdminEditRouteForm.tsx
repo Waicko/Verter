@@ -14,6 +14,18 @@ type RouteRow = {
   gpx_path?: string;
   status?: string;
   slug?: string;
+  source_type?: string | null;
+  source_name?: string | null;
+  source_url?: string | null;
+  submitted_by_name?: string | null;
+  submitted_by_email?: string | null;
+  rights_basis?: string | null;
+  license_name?: string | null;
+  license_url?: string | null;
+  verification_status?: string | null;
+  route_origin_type?: string | null;
+  route_origin_name?: string | null;
+  route_origin_url?: string | null;
 };
 
 interface AdminEditRouteFormProps {
@@ -76,6 +88,18 @@ export default function AdminEditRouteForm({ routeId }: AdminEditRouteFormProps)
           slug: data.slug || null,
           status: data.status,
           gpx_path: data.gpx_path || null,
+          source_type: data.source_type?.trim() || null,
+          source_name: data.source_name?.trim() || null,
+          source_url: data.source_url?.trim() || null,
+          submitted_by_name: data.submitted_by_name?.trim() || null,
+          submitted_by_email: data.submitted_by_email?.trim() || null,
+          rights_basis: data.rights_basis?.trim() || null,
+          license_name: data.license_name?.trim() || null,
+          license_url: data.license_url?.trim() || null,
+          verification_status: data.verification_status?.trim() || null,
+          route_origin_type: data.route_origin_type?.trim() || null,
+          route_origin_name: data.route_origin_name?.trim() || null,
+          route_origin_url: data.route_origin_url?.trim() || null,
         }),
       });
 
