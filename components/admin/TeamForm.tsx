@@ -76,7 +76,7 @@ export default function TeamForm({ initial, locale, mode }: TeamFormProps) {
         });
         const json = await res.json();
         if (res.ok && json.id) {
-          router.push(`/${locale}/admin/team/${json.id}/edit`);
+          router.push(`/admin/team/${json.id}/edit`);
         } else {
           alert(json.error ?? "Create failed");
         }

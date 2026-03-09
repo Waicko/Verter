@@ -26,7 +26,7 @@ export default function EditTeamClient({ member, locale }: Props) {
       body: JSON.stringify({ status: "archived" }),
     });
     if (res.ok) {
-      router.push(`/${locale}/admin/team`);
+      router.push("/admin/team");
     }
   };
 

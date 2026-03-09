@@ -119,6 +119,7 @@
     "filterByType": "Suodata tyypin mukaan",
     "allTypes": "Kaikki tyypit",
     "emptyState": "Sisältöä ei löydy valituilla suodattimilla.",
+    "clearAll": "Tyhjennä",
     "backToContent": "← Takaisin sisältöön",
     "relatedRoutes": "Liittyvät reitit",
     "related": "Liittyy"
@@ -472,6 +473,7 @@
     "publicRouteOriginType": "Reitin alkuperätyyppi"
   },
   "filters": {
+    "author": "Tekijä",
     "hasGpx": "Vain reitit GPX-tiedostolla",
     "sortBy": "Järjestä",
     "sortDistance": "Matka",

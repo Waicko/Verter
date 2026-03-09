@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { cardClass } from "@/lib/styles";
 import type { AdminTeamMember } from "@/lib/data/team";
@@ -13,11 +12,10 @@ interface AdminTeamCardProps {
 }
 
 export default function AdminTeamCard({ member }: AdminTeamCardProps) {
-  const locale = useLocale();
   const t = useTranslations("admin");
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
-  const editHref = `/${locale}/admin/team/${member.id}/edit`;
+  const editHref = `/admin/team/${member.id}/edit`;
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();

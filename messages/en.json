@@ -121,6 +121,7 @@
     "filterByType": "Filter by type",
     "allTypes": "All types",
     "emptyState": "No content matches your filter.",
+    "clearAll": "Clear",
     "backToContent": "← Back to content",
     "relatedRoutes": "Related routes",
     "related": "Related"
@@ -470,6 +471,7 @@
     "publicRouteOriginType": "Route origin type"
   },
   "filters": {
+    "author": "Author",
     "hasGpx": "Only routes with GPX",
     "sortBy": "Sort by",
     "sortDistance": "Distance",

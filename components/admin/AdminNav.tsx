@@ -20,12 +20,6 @@ export default function AdminNav() {
   return (
     <nav className="mb-8 flex flex-wrap items-center gap-4 border-b border-verter-border pb-4">
       <Link
-        href="/admin"
-        className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
-      >
-        {t("navDashboard")}
-      </Link>
-      <Link
         href="/admin/team"
         className="text-sm font-medium text-verter-graphite hover:text-verter-forest"
       >

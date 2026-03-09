@@ -63,7 +63,6 @@ export default function ContentPageClient({ items }: Props) {
     { value: "", label: t("allTypes") },
     { value: "blog", label: t("blog") },
     { value: "review", label: t("review") },
-    { value: "podcast", label: t("podcast") },
     { value: "comparison", label: t("comparison") },
   ];
 

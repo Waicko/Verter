@@ -16,7 +16,6 @@ export const CONTENT_FILTERS: FilterConfig[] = [
       { value: "", label: "filters.allTypes" },
       { value: "blog", label: "content.blog" },
       { value: "review", label: "content.review" },
-      { value: "podcast", label: "content.podcast" },
       { value: "comparison", label: "content.comparison" },
     ],
   },

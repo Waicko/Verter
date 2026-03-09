@@ -52,6 +52,7 @@ export default function ContentItemForm({
   const [loading, setLoading] = useState(false);
   const [modeToggle, setModeToggle] = useState<"edit" | "preview">("edit");
 
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [data, setData] = useState<FormData>(() => ({
     title: initial?.title ?? "",
     slug: initial?.slug ?? "",
@@ -129,7 +130,7 @@ export default function ContentItemForm({
         });
         const json = await res.json();
         if (res.ok && json.id) {
-          router.push(`/${locale}/admin/content/${json.id}/edit`);
+          router.push(`/admin/content/${json.id}/edit`);
         } else {
           alert(json.error ?? "Create failed");
         }
@@ -177,7 +178,7 @@ export default function ContentItemForm({
           {modeToggle === "edit" ? t("showPreview") : t("showEdit")}
         </button>
         <Link
-          href={`/${locale}/admin/content`}
+          href="/admin/content"
           className="rounded-pill border border-verter-border bg-white px-4 py-2 text-sm font-medium text-verter-graphite hover:bg-verter-snow"
         >
           {t("backToContent")}
@@ -188,7 +189,7 @@ export default function ContentItemForm({
         <div className={cardClass}>
           <div className="p-6">
             <Link
-              href={`/${locale}/content`}
+              href="/content"
               className="mb-4 inline-flex text-sm font-medium text-verter-muted hover:text-verter-graphite"
             >
               ← {t("backToContent")}
@@ -243,7 +244,7 @@ export default function ContentItemForm({
                     setData((d) => ({
                       ...d,
                       title: v,
-                      slug: d.slug || slugify(v),
+                      slug: slugManuallyEdited ? d.slug : slugify(v),
                     }));
                   }}
                   required
@@ -257,7 +258,10 @@ export default function ContentItemForm({
                 <input
                   type="text"
                   value={data.slug}
-                  onChange={(e) => setData((d) => ({ ...d, slug: e.target.value }))}
+                  onChange={(e) => {
+                    setSlugManuallyEdited(true);
+                    setData((d) => ({ ...d, slug: e.target.value }));
+                  }}
                   placeholder={slugify(data.title) || "my-post"}
                   className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
                 />
@@ -275,7 +279,6 @@ export default function ContentItemForm({
                 >
                   <option value="blog">{tContent("blog")}</option>
                   <option value="review">{tContent("review")}</option>
-                  <option value="podcast">{tContent("podcast")}</option>
                   <option value="comparison">{tContent("comparison")}</option>
                 </select>
               </div>
