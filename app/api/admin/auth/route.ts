@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAdminSessionToken } from "@/lib/admin-auth";
 
 const ADMIN_COOKIE = "admin_auth";
 const COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
 
 export async function POST(request: NextRequest) {
   const { password } = (await request.json()) as { password?: string };
-  const expected = process.env.ADMIN_PASSWORD;
+  const expected = process.env.ADMIN_SECRET;
 
   if (!expected) {
     return NextResponse.json(
@@ -15,8 +16,15 @@ export async function POST(request: NextRequest) {
   }
 
   if (password === expected) {
+    const token = createAdminSessionToken();
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: "Admin not configured" },
+        { status: 500 }
+      );
+    }
     const res = NextResponse.json({ ok: true });
-    res.cookies.set(ADMIN_COOKIE, "1", {
+    res.cookies.set(ADMIN_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

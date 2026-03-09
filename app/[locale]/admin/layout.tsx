@@ -2,8 +2,7 @@ import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import AdminGate from "./AdminGate";
 import AdminNav from "@/components/admin/AdminNav";
-
-const ADMIN_COOKIE = "admin_auth";
+import { checkAdmin } from "@/lib/admin-auth";
 
 type Props = {
   children: React.ReactNode;
@@ -13,10 +12,9 @@ type Props = {
 export default async function AdminLayout({ children, params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const cookieStore = await cookies();
-  const auth = cookieStore.get(ADMIN_COOKIE)?.value;
+  const isAdmin = await checkAdmin();
 
-  if (!auth) {
+  if (!isAdmin) {
     return <AdminGate />;
   }
 
