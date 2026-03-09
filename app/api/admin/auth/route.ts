@@ -6,16 +6,17 @@ const COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
 
 export async function POST(request: NextRequest) {
   const { password } = (await request.json()) as { password?: string };
-  const expected = process.env.ADMIN_SECRET;
+  const expectedPassword = process.env.ADMIN_PASSWORD;
+  const sessionSecret = process.env.ADMIN_SESSION_SECRET;
 
-  if (!expected) {
+  if (!expectedPassword || !sessionSecret) {
     return NextResponse.json(
       { ok: false, error: "Admin not configured" },
       { status: 500 }
     );
   }
 
-  if (password === expected) {
+  if (password === expectedPassword) {
     const token = createAdminSessionToken();
     if (!token) {
       return NextResponse.json(
@@ -42,6 +43,6 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.delete(ADMIN_COOKIE);
+  res.cookies.delete(ADMIN_COOKIE, { path: "/" });
   return res;
 }

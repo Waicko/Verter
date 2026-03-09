@@ -1,6 +1,15 @@
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 
+/**
+ * Admin auth: signed session cookies. Protected by checkAdmin():
+ * - /api/admin/routes (GET), create, update, delete, upload, publish, unpublish
+ * - /api/admin/events (GET), create, update, delete, publish, unpublish
+ * - /api/admin/content (GET, POST), [id] (GET, PATCH, DELETE)
+ * - /api/admin/team (GET, POST), [id] (GET, PATCH, DELETE)
+ * - /api/admin/podcast/guests (GET, POST), [id] (GET, PATCH, DELETE)
+ * Auth endpoint /api/admin/auth (POST, DELETE) is public.
+ */
 const ADMIN_COOKIE = "admin_auth";
 
 /** Create a signed session token. Used by login API. */
@@ -10,7 +19,7 @@ export function createAdminSessionToken(): string {
 }
 
 function signToken(expiresAt: number): string {
-  const secret = process.env.ADMIN_SECRET;
+  const secret = process.env.ADMIN_SESSION_SECRET;
   if (!secret) return "";
   const payload = String(expiresAt);
   const sig = createHmac("sha256", secret).update(payload).digest("hex");
@@ -18,7 +27,7 @@ function signToken(expiresAt: number): string {
 }
 
 function verifyToken(token: string): boolean {
-  const secret = process.env.ADMIN_SECRET;
+  const secret = process.env.ADMIN_SESSION_SECRET;
   if (!secret || !token) return false;
   const i = token.indexOf(".");
   if (i <= 0) return false;
