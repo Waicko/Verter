@@ -79,7 +79,12 @@ export default function ContentItemForm({
   }));
 
   const buildPayload = (status: "draft" | "published"): DbContentItemInsert & Record<string, unknown> => {
-    const slug = data.slug.trim() || slugify(data.title);
+    const fromTitle = slugify(data.title);
+    const trimmed = data.slug.trim();
+    // Use full slug from title when: no slug, or slug looks truncated (1 char) vs title
+    const slug = trimmed && (trimmed.length > 1 || !fromTitle)
+      ? trimmed
+      : fromTitle || trimmed || "";
     return {
       title: data.title.trim(),
       slug,
