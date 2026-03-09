@@ -26,6 +26,8 @@ type RouteRow = {
   route_origin_type?: string | null;
   route_origin_name?: string | null;
   route_origin_url?: string | null;
+  start_lat?: number | null;
+  start_lng?: number | null;
   submitted_by_strava_url?: string | null;
   approved_by_verter?: boolean | null;
   approved_by_name?: string | null;
@@ -69,6 +71,8 @@ export default function AdminEditRouteForm({ routeId }: AdminEditRouteFormProps)
           slug: r.slug ?? "",
           status: r.status === "published" ? "published" : "draft",
           gpx_path: r.gpx_path ?? "",
+          start_lat: r.start_lat != null ? String(r.start_lat) : "",
+          start_lng: r.start_lng != null ? String(r.start_lng) : "",
           submitted_by_strava_url: r.submitted_by_strava_url ?? "",
           approved_by_verter: r.approved_by_verter ?? false,
           approved_by_name: r.approved_by_name ?? "",
@@ -103,6 +107,8 @@ export default function AdminEditRouteForm({ routeId }: AdminEditRouteFormProps)
           slug: data.slug || null,
           status: data.status,
           gpx_path: data.gpx_path || null,
+          start_lat: data.start_lat ? parseFloat(data.start_lat) : null,
+          start_lng: data.start_lng ? parseFloat(data.start_lng) : null,
           source_type: data.source_type?.trim() || null,
           source_name: data.source_name?.trim() || null,
           source_url: data.source_url?.trim() || null,

@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
   let gpxPath: string | null = null;
   let distance_km: number | null = null;
   let ascent_m: number | null = null;
+  let start_lat: number | null = null;
+  let start_lng: number | null = null;
 
   if (gpxFile && typeof (gpxFile as Blob).arrayBuffer === "function") {
     const ext = gpxFile.name.toLowerCase().endsWith(".gpx") ? "" : ".gpx";
@@ -63,6 +65,8 @@ export async function POST(request: NextRequest) {
       if (stats) {
         distance_km = stats.distance_km ?? null;
         ascent_m = stats.ascent_m ?? null;
+        start_lat = stats.start_lat ?? null;
+        start_lng = stats.start_lng ?? null;
       }
     } catch {
       // Ignore parse errors
@@ -79,6 +83,8 @@ export async function POST(request: NextRequest) {
     gpx_path: gpxPath,
     distance_km,
     ascent_m,
+    start_lat,
+    start_lng,
     slug,
     status: "draft",
   })).error;
@@ -92,6 +98,8 @@ export async function POST(request: NextRequest) {
       gpx_path: gpxPath,
       distance_km,
       ascent_m,
+      start_lat,
+      start_lng,
       slug,
       status: "draft",
     });

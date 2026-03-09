@@ -19,6 +19,8 @@ export type RouteFormData = {
   slug: string;
   status: "published" | "draft";
   gpx_path: string;
+  start_lat: string;
+  start_lng: string;
 } & MetadataFormValues &
   RouteTrustVerificationValues;
 
@@ -57,6 +59,8 @@ const emptyData: RouteFormData = {
   slug: "",
   status: "published",
   gpx_path: "",
+  start_lat: "",
+  start_lng: "",
 };
 
 function slugify(text: string): string {
@@ -162,6 +166,8 @@ export default function RouteForm({
         if (json.ascent_m !== undefined) {
           updates.ascent_m = json.ascent_m == null ? "" : String(json.ascent_m);
         }
+        if (json.start_lat != null) updates.start_lat = String(json.start_lat);
+        if (json.start_lng != null) updates.start_lng = String(json.start_lng);
         setFormState((prev) => ({ ...prev, ...updates }));
         setGpxUploadStatus("success");
         setGpxUploadMessage(`Upload succeeded. Path: ${path}`);
@@ -198,6 +204,8 @@ export default function RouteForm({
       description: formState.description.trim(),
       slug: formState.slug.trim() || slugify(title),
       gpx_path: formState.gpx_path.trim(),
+      start_lat: formState.start_lat?.trim() || "",
+      start_lng: formState.start_lng?.trim() || "",
       source_type: formState.source_type || "",
       source_name: formState.source_name?.trim() || "",
       source_url: formState.source_url?.trim() || "",

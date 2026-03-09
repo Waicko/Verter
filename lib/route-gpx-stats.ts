@@ -8,6 +8,10 @@ import toGeoJSON from "@mapbox/togeojson";
 
 type GpxPoint = { lat: number; lng: number; ele: number };
 
+function roundCoord(n: number): number {
+  return Math.round(n * 1e6) / 1e6;
+}
+
 function haversineDistanceKm(
   lat1: number,
   lon1: number,
@@ -68,6 +72,9 @@ function extractPointsFromGeoJson(geojson: unknown): ExtractResult {
 export type GpxStats = {
   distance_km: number;
   ascent_m: number | null;
+  /** First coordinate of the track (for map markers). Present when points.length >= 1. */
+  start_lat?: number;
+  start_lng?: number;
 };
 
 /**
@@ -82,7 +89,20 @@ export function calculateGpxStats(xmlText: string): GpxStats | null {
     const geojson = toGeoJSON.gpx(gpxDoc);
 
     const { points, hasElevationData } = extractPointsFromGeoJson(geojson);
-    if (points.length < 2) return null;
+    if (points.length < 1) return null;
+
+    const first = points[0];
+    const start_lat = roundCoord(first.lat);
+    const start_lng = roundCoord(first.lng);
+
+    if (points.length < 2) {
+      return {
+        distance_km: 0,
+        ascent_m: null,
+        start_lat,
+        start_lng,
+      };
+    }
 
     let totalDistanceKm = 0;
     for (let i = 1; i < points.length; i++) {
@@ -107,6 +127,8 @@ export function calculateGpxStats(xmlText: string): GpxStats | null {
     return {
       distance_km: Math.round(totalDistanceKm * 10) / 10,
       ascent_m: ascentM,
+      start_lat,
+      start_lng,
     };
   } catch {
     return null;

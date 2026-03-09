@@ -53,15 +53,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Parse GPX and calculate distance/ascent for form prefilling
+  // Parse GPX and calculate distance/ascent/start coords for form prefilling
   let distance_km: number | undefined;
   let ascent_m: number | null | undefined;
+  let start_lat: number | undefined;
+  let start_lng: number | undefined;
   try {
     const xmlText = new TextDecoder().decode(arrayBuffer);
     const stats = calculateGpxStats(xmlText);
     if (stats) {
       distance_km = stats.distance_km;
       ascent_m = stats.ascent_m; // null when GPX has no elevation data
+      start_lat = stats.start_lat;
+      start_lng = stats.start_lng;
     }
   } catch (parseErr) {
     console.warn("[routes/upload] GPX stats parse failed:", parseErr);
@@ -71,8 +75,12 @@ export async function POST(request: NextRequest) {
     path: string;
     distance_km?: number;
     ascent_m?: number | null;
+    start_lat?: number;
+    start_lng?: number;
   } = { path: data.path };
   if (distance_km != null) payload.distance_km = distance_km;
-  if (ascent_m !== undefined) payload.ascent_m = ascent_m; // include null so client clears field
+  if (ascent_m !== undefined) payload.ascent_m = ascent_m;
+  if (start_lat != null) payload.start_lat = start_lat;
+  if (start_lng != null) payload.start_lng = start_lng;
   return NextResponse.json(payload);
 }

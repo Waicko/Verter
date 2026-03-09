@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
     ascent_m?: number;
     description?: string;
     gpx_path?: string;
+    start_lat?: number;
+    start_lng?: number;
     status?: string;
     slug?: string;
     source_type?: string;
@@ -71,6 +73,8 @@ export async function POST(request: NextRequest) {
     ascent_m: body.ascent_m != null ? Number(body.ascent_m) : null,
     description: body.description?.trim() || null,
     gpx_path: body.gpx_path?.trim() || null,
+    start_lat: body.start_lat != null ? Number(body.start_lat) : null,
+    start_lng: body.start_lng != null ? Number(body.start_lng) : null,
     status: body.status === "draft" ? "draft" : "published",
     slug,
     source_type: body.source_type?.trim() || null,

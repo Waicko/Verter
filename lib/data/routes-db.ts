@@ -12,6 +12,8 @@ export type DbRoute = {
   gpx_path: string | null;
   status: string;
   slug: string;
+  start_lat: number | null;
+  start_lng: number | null;
   created_at: string;
 } & Partial<SourceRightsMetadata> &
   Partial<RouteOriginMetadata> & {

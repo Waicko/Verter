@@ -26,6 +26,8 @@ export default function AdminNewRouteForm() {
           slug: data.slug || null,
           status: data.status,
           gpx_path: data.gpx_path || null,
+          start_lat: data.start_lat ? parseFloat(data.start_lat) : null,
+          start_lng: data.start_lng ? parseFloat(data.start_lng) : null,
           source_type: data.source_type?.trim() || null,
           source_name: data.source_name?.trim() || null,
           source_url: data.source_url?.trim() || null,

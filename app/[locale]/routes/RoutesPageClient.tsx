@@ -91,7 +91,24 @@ export default function RoutesPageClient({ data }: RoutesPageClientProps) {
     [routes, filterState]
   );
 
-  const mapRoutes = useMemo(() => [], []); // DB routes have no start_lat/lng; map shows empty
+  const mapRoutes = useMemo(() => {
+    return filteredRoutes
+      .filter(
+        (r): r is typeof r & { start_lat: number; start_lng: number } =>
+          r.start_lat != null &&
+          r.start_lng != null &&
+          typeof r.start_lat === "number" &&
+          typeof r.start_lng === "number"
+      )
+      .map((r) => ({
+        slug: r.slug,
+        name: r.title,
+        region: r.area ?? "",
+        distance_km: r.distance_km ?? 0,
+        start_lat: r.start_lat,
+        start_lng: r.start_lng,
+      }));
+  }, [filteredRoutes]);
 
   const updateUrl = (options: {
     regions?: string[];
