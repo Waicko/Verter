@@ -21,7 +21,7 @@ export default async function HomePage({ params }: Props) {
   const [routes, teamMembers, contentItems] = await Promise.all([
     getPublishedRoutes(),
     getPublishedTeamMembers(locale as "fi" | "en"),
-    getPublishedContentItems(),
+    getPublishedContentItems(locale),
   ]);
   const featuredRoutes = routes.slice(0, 3);
   const latestContent = contentItems.slice(0, 3);

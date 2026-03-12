@@ -18,7 +18,7 @@ export default async function ContentPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const items = await getPublishedContentItems();
+  const items = await getPublishedContentItems(locale);
 
   return <ContentPageClient items={items} />;
 }

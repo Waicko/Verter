@@ -6,9 +6,10 @@ const locales = ["fi", "en"] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://verter.fi";
-  const [routes, contentItems] = await Promise.all([
+  const [routes, contentFi, contentEn] = await Promise.all([
     getPublishedRoutes(),
-    getPublishedContentItems(),
+    getPublishedContentItems("fi"),
+    getPublishedContentItems("en"),
   ]);
 
   const staticPaths = ["", "/routes", "/content", "/leirit", "/camps", "/about"];
@@ -30,14 +31,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  const contentPages: MetadataRoute.Sitemap = locales.flatMap((locale) =>
-    contentItems.map((item) => ({
-      url: `${baseUrl}/${locale}/content/${item.slug}`,
+  const contentPages: MetadataRoute.Sitemap = [
+    ...contentFi.map((item) => ({
+      url: `${baseUrl}/fi/content/${item.slug}`,
       lastModified: item.published_at ? new Date(item.published_at) : new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
-    }))
-  );
+    })),
+    ...contentEn.map((item) => ({
+      url: `${baseUrl}/en/content/${item.slug}`,
+      lastModified: item.published_at ? new Date(item.published_at) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
 
   return [...staticPages, ...routePages, ...contentPages];
 }

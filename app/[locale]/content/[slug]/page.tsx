@@ -11,7 +11,7 @@ type Props = { params: Promise<{ locale: string; slug: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
-  const item = await getContentBySlug(slug);
+  const item = await getContentBySlug(slug, locale);
   if (!item) {
     const t = await getTranslations({ locale, namespace: "common" });
     return { title: t("contentNotFound") };
@@ -31,7 +31,7 @@ export default async function ContentDetailPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("content");
 
-  const item = await getContentBySlug(slug);
+  const item = await getContentBySlug(slug, locale);
   if (!item) notFound();
 
   const [relatedRoutes, relatedEvents] = await Promise.all([

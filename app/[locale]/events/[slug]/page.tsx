@@ -44,7 +44,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   if (!ev) notFound();
 
   const relatedContent = ev.slug?.trim()
-    ? await getPublishedContentItemsByEventSlug(ev.slug)
+    ? await getPublishedContentItemsByEventSlug(ev.slug, locale)
     : [];
 
   const dateStr = ev.date

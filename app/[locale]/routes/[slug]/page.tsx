@@ -47,7 +47,7 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
   const t = await getTranslations("routes");
   const dbRoute = await getPublishedRouteBySlug(slug);
   if (dbRoute) {
-    const relatedContent = await getPublishedContentItemsByRouteSlug(slug);
+    const relatedContent = await getPublishedContentItemsByRouteSlug(slug, locale);
     return (
       <div className="px-4 py-8 sm:px-6 sm:py-12">
         <div className="mx-auto min-w-0 max-w-2xl">

@@ -1,5 +1,8 @@
 import type { SourceRightsMetadata } from "@/lib/metadata-types";
 
+/** Localized content field names */
+export type LocaleCode = "fi" | "en";
+
 /** Supabase content_items table row */
 export type DbContentItem = {
   id: string;
@@ -9,6 +12,19 @@ export type DbContentItem = {
   summary: string | null;
   body: string;
   hero_image: string | null;
+  /** Localized fields (FI/EN). Preferred over title/slug/summary/body when present. */
+  title_fi?: string | null;
+  title_en?: string | null;
+  slug_fi?: string | null;
+  slug_en?: string | null;
+  excerpt_fi?: string | null;
+  excerpt_en?: string | null;
+  body_fi?: string | null;
+  body_en?: string | null;
+  seo_title_fi?: string | null;
+  seo_title_en?: string | null;
+  seo_description_fi?: string | null;
+  seo_description_en?: string | null;
   /** @deprecated Use related_route_slugs. Legacy IDs; semantics unclear (items vs routes). */
   related_item_ids: string[] | null;
   /** Canonical field for content → route linking. Array of routes.slug values. */

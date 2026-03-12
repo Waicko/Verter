@@ -26,16 +26,47 @@ export type ContentItemDetail = ContentItemPublic & {
   verification_status?: string | null;
 };
 
-function rowToPublic(row: DbContentItem): ContentItemPublic {
+/** Pick localized value: prefer locale, fall back to FI */
+function pickLocale<T>(
+  row: DbContentItem & Record<string, unknown>,
+  locale: string,
+  fiKey: string,
+  enKey: string,
+  fallback: T
+): T {
+  const isEn = locale === "en";
+  if (isEn) {
+    const en = row[enKey];
+    if (en != null && String(en).trim()) return en as T;
+  }
+  const fi = row[fiKey];
+  if (fi != null && String(fi).trim()) return fi as T;
+  return fallback;
+}
+
+/** Project row to public view for a given locale (localized fields with FI fallback) */
+function rowToPublic(row: DbContentItem, locale: string = "fi"): ContentItemPublic {
   const db = row as DbContentItem & {
     related_route_slugs?: string[] | null;
     related_event_slugs?: string[] | null;
   };
+  const hasLocalized = db.slug_fi != null || db.title_fi != null;
+
+  const title = hasLocalized
+    ? pickLocale(db, locale, "title_fi", "title_en", db.title ?? "")
+    : db.title ?? "";
+  const slug = hasLocalized
+    ? pickLocale(db, locale, "slug_fi", "slug_en", db.slug ?? "")
+    : db.slug ?? "";
+  const excerpt = hasLocalized
+    ? pickLocale(db, locale, "excerpt_fi", "excerpt_en", db.summary ?? "")
+    : db.summary ?? "";
+
   return {
     id: row.id,
-    slug: row.slug,
-    title: row.title,
-    excerpt: row.summary ?? "",
+    slug,
+    title,
+    excerpt,
     type: row.content_type,
     published_at: row.published_at ?? undefined,
     image_url: row.hero_image ?? undefined,
@@ -46,8 +77,10 @@ function rowToPublic(row: DbContentItem): ContentItemPublic {
   };
 }
 
-/** Fetch published content items for public list */
-export async function getPublishedContentItems(): Promise<ContentItemPublic[]> {
+/** Fetch published content items for public list. Pass locale for localized slug/title/excerpt. */
+export async function getPublishedContentItems(
+  locale: string = "fi"
+): Promise<ContentItemPublic[]> {
   try {
     const supabase = getSupabaseServerClient();
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
@@ -60,7 +93,7 @@ export async function getPublishedContentItems(): Promise<ContentItemPublic[]> {
       .order("published_at", { ascending: false, nullsFirst: false });
 
     if (error || !rows) return [];
-    return rows.map((r) => rowToPublic(r as DbContentItem));
+    return rows.map((r) => rowToPublic(r as DbContentItem, locale));
   } catch {
     return [];
   }
@@ -68,7 +101,8 @@ export async function getPublishedContentItems(): Promise<ContentItemPublic[]> {
 
 /** Fetch published content items that reference the given route slug in related_route_slugs. */
 export async function getPublishedContentItemsByRouteSlug(
-  routeSlug: string
+  routeSlug: string,
+  locale: string = "fi"
 ): Promise<ContentItemPublic[]> {
   const slug = typeof routeSlug === "string" ? routeSlug.trim() : "";
   if (!slug) return [];
@@ -86,7 +120,7 @@ export async function getPublishedContentItemsByRouteSlug(
       .order("published_at", { ascending: false, nullsFirst: false });
 
     if (error || !rows) return [];
-    return rows.map((r) => rowToPublic(r as DbContentItem));
+    return rows.map((r) => rowToPublic(r as DbContentItem, locale));
   } catch {
     return [];
   }
@@ -94,7 +128,8 @@ export async function getPublishedContentItemsByRouteSlug(
 
 /** Fetch published content items that reference the given event slug in related_event_slugs. */
 export async function getPublishedContentItemsByEventSlug(
-  eventSlug: string
+  eventSlug: string,
+  locale: string = "fi"
 ): Promise<ContentItemPublic[]> {
   const slug = typeof eventSlug === "string" ? eventSlug.trim() : "";
   if (!slug) return [];
@@ -112,34 +147,67 @@ export async function getPublishedContentItemsByEventSlug(
       .order("published_at", { ascending: false, nullsFirst: false });
 
     if (error || !rows) return [];
-    return rows.map((r) => rowToPublic(r as DbContentItem));
+    return rows.map((r) => rowToPublic(r as DbContentItem, locale));
   } catch {
     return [];
   }
 }
 
-/** Fetch content by slug for public detail. Excludes podcast-type (podcasts live on /podcast). */
+/** Fetch content by slug for public detail. Looks up by slug_fi, slug_en, or slug (legacy). */
 export async function getContentBySlug(
-  slug: string
+  slug: string,
+  locale: string = "fi"
 ): Promise<ContentItemDetail | null> {
   try {
     const supabase = getSupabaseServerClient();
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
 
-    const { data: row, error } = await supabase
+    const baseQuery = supabase
       .from("content_items")
       .select("*")
       .eq("status", "published")
-      .in("content_type", ["blog", "review", "comparison"])
-      .eq("slug", slug)
-      .single();
+      .in("content_type", ["blog", "review", "comparison"]);
 
-    if (error || !row) return null;
+    let row: unknown = null;
+    let err: unknown = null;
+
+    const { data: bySlugFi } = await baseQuery.eq("slug_fi", slug).maybeSingle();
+    if (bySlugFi) {
+      row = bySlugFi;
+    } else {
+      const { data: bySlugEn } = await supabase
+        .from("content_items")
+        .select("*")
+        .eq("status", "published")
+        .in("content_type", ["blog", "review", "comparison"])
+        .eq("slug_en", slug)
+        .maybeSingle();
+      if (bySlugEn) {
+        row = bySlugEn;
+      } else {
+        const { data: bySlug, error } = await supabase
+          .from("content_items")
+          .select("*")
+          .eq("status", "published")
+          .in("content_type", ["blog", "review", "comparison"])
+          .eq("slug", slug)
+          .maybeSingle();
+        row = bySlug;
+        err = error;
+      }
+    }
+
+    if (!row) return null;
 
     const r = row as DbContentItem;
+    const hasLocalized = r.slug_fi != null || r.title_fi != null;
+    const body = hasLocalized
+      ? pickLocale(r, locale, "body_fi", "body_en", r.body ?? "")
+      : r.body ?? "";
+
     return {
-      ...rowToPublic(r),
-      body: r.body ?? "",
+      ...rowToPublic(r, locale),
+      body: String(body),
       episode_url: r.episode_url,
       source_name: (r as DbContentItem & { source_name?: string | null }).source_name ?? null,
       source_type: (r as DbContentItem & { source_type?: string | null }).source_type ?? null,
