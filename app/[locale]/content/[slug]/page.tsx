@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import ReactMarkdown from "react-markdown";
 import { getContentBySlug } from "@/lib/data/content-items";
+import { getPublishedEventsBySlugs } from "@/lib/data/events-db";
 import { getPublishedRoutesBySlugs } from "@/lib/data/routes-db";
 import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
 
@@ -33,11 +34,14 @@ export default async function ContentDetailPage({ params }: Props) {
   const item = await getContentBySlug(slug);
   if (!item) notFound();
 
-  const relatedRoutes =
-    item.related_route_slugs?.length &&
-    item.related_route_slugs.some((s) => s?.trim())
-      ? await getPublishedRoutesBySlugs(item.related_route_slugs)
-      : [];
+  const [relatedRoutes, relatedEvents] = await Promise.all([
+    item.related_route_slugs?.length && item.related_route_slugs.some((s) => s?.trim())
+      ? getPublishedRoutesBySlugs(item.related_route_slugs)
+      : [],
+    item.related_event_slugs?.length && item.related_event_slugs.some((s) => s?.trim())
+      ? getPublishedEventsBySlugs(item.related_event_slugs)
+      : [],
+  ]);
 
   const typeLabels: Record<string, string> = {
     blog: t("blog"),
@@ -128,6 +132,35 @@ export default async function ContentDetailPage({ params }: Props) {
                     {route.area && (
                       <span className="ml-1.5 text-verter-muted">
                         — {route.area}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {relatedEvents.length > 0 && (
+          <section className="mt-12 border-t border-verter-border pt-8">
+            <h2 className="font-heading text-lg font-semibold text-verter-graphite">
+              {t("relatedEvents")}
+            </h2>
+            <ul className="mt-4 space-y-2">
+              {relatedEvents.map((ev) => (
+                <li key={ev.id}>
+                  <Link
+                    href={`/events/${ev.slug}`}
+                    className="text-verter-forest hover:underline"
+                  >
+                    {ev.title}
+                    {ev.date && (
+                      <span className="ml-1.5 text-verter-muted">
+                        — {new Date(ev.date).toLocaleDateString(locale, {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </span>
                     )}
                   </Link>
