@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
@@ -71,9 +72,11 @@ export default function AdminPodcastGuestCard({ guest }: AdminPodcastGuestCardPr
       <Link href={editHref} className={`block p-4 ${cardClass}`}>
         <div className="flex items-start gap-3">
           {guest.image_url ? (
-            <img
+            <Image
               src={guest.image_url}
               alt={guest.name}
+              width={48}
+              height={48}
               className="h-12 w-12 shrink-0 rounded-full object-cover"
             />
           ) : (

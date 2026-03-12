@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { cardClass } from "@/lib/styles";
 import type { TeamMember } from "@/lib/data/team";
 
@@ -13,9 +14,11 @@ export default function TeamMemberCard({ member }: TeamMemberCardProps) {
     <div className={cardClass}>
       <div className="flex items-start gap-4 p-4">
         {member.image_url ? (
-          <img
+          <Image
             src={member.image_url}
             alt={member.name}
+            width={56}
+            height={56}
             className="h-14 w-14 shrink-0 rounded-full object-cover"
           />
         ) : (

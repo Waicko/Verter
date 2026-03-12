@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -71,9 +72,11 @@ export default function AdminTeamCard({ member }: AdminTeamCardProps) {
       >
         <div className="flex items-start gap-3">
           {member.image_url ? (
-            <img
+            <Image
               src={member.image_url}
               alt={member.name}
+              width={48}
+              height={48}
               className="h-12 w-12 shrink-0 rounded-full object-cover"
             />
           ) : (

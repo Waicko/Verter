@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cardClass } from "@/lib/styles";
 import type { PodcastGuest } from "@/lib/data/podcast";
@@ -22,9 +23,11 @@ export default function PodcastGuestCard({
     <div className={cardClass}>
       <div className={`flex items-start gap-4 ${isLarge ? "p-6" : "p-4"}`}>
         {guest.image_url ? (
-          <img
+          <Image
             src={guest.image_url}
             alt={guest.name}
+            width={isLarge ? 96 : 56}
+            height={isLarge ? 96 : 56}
             className={`shrink-0 rounded-full object-cover ${
               isLarge ? "h-24 w-24" : "h-14 w-14"
             }`}

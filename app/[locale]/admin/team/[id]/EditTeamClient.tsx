@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Link, getPathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import TeamForm from "@/components/admin/TeamForm";
@@ -121,9 +122,11 @@ export default function EditTeamClient({ member, locale }: Props) {
         <div className={cardClass}>
           <div className="flex items-start gap-4 p-6">
             {member.image_url ? (
-              <img
+              <Image
                 src={member.image_url}
                 alt={member.name}
+                width={80}
+                height={80}
                 className="h-20 w-20 shrink-0 rounded-full object-cover"
               />
             ) : (
