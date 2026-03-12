@@ -254,10 +254,6 @@
     "approvalPrinciples": "Approval principles",
     "disclaimer": "Safety & disclaimer"
   },
-  "metadata": {
-    "defaultTitle": "Verter | Trail Running Routes in Finland",
-    "defaultDescription": "Find and filter runnable routes across Finland."
-  },
   "submit": {
     "pageTitle": "Submit an event or route",
     "pageDescription": "All submissions are reviewed before publishing. Choose what you want to submit.",
@@ -433,6 +429,8 @@
     }
   },
   "metadata": {
+    "defaultTitle": "Verter | Trail Running Routes in Finland",
+    "defaultDescription": "Find and filter runnable routes across Finland.",
     "sectionTitle": "Source and rights",
     "sourceType": "Source type",
     "sourceName": "Source name",

@@ -1,42 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { Link, getPathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import TeamForm from "@/components/admin/TeamForm";
-import type { DbTeamMember } from "@/lib/db/team-types";
-import { cardClass } from "@/lib/styles";
+import ItemForm from "@/components/admin/ItemForm";
+import ItemDetailPreview from "@/components/admin/ItemDetailPreview";
+import QualityChecklist from "@/components/admin/QualityChecklist";
+import type { DbItem } from "@/lib/db/types";
 
 interface Props {
-  member: DbTeamMember;
+  item: DbItem;
   locale: string;
 }
 
-export default function EditTeamClient({ member, locale }: Props) {
+export default function EditItemClient({ item, locale }: Props) {
   const router = useRouter();
   const t = useTranslations("admin");
   const [mode, setMode] = useState<"edit" | "preview">("edit");
 
   const handleArchive = async () => {
     if (!confirm(t("archiveConfirm"))) return;
-    const res = await fetch(`/api/admin/team/${member.id}`, {
+    const res = await fetch(`/api/admin/items/${item.id}`, {
       method: "PATCH",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "archived" }),
     });
     if (res.ok) {
-      const path = getPathname({
-        locale: locale as "fi" | "en",
-        href: "/admin/team",
-      });
-      router.push(path);
+      router.push(`/${locale}/admin`);
     }
   };
 
   const handleUnpublish = async () => {
     if (!confirm(t("unpublishConfirm"))) return;
-    const res = await fetch(`/api/admin/team/${member.id}`, {
+    const res = await fetch(`/api/admin/items/${item.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "draft" }),
@@ -46,28 +42,19 @@ export default function EditTeamClient({ member, locale }: Props) {
     }
   };
 
-  const isPublished = member.status === "published";
-  const isArchived = member.status === "archived";
-
-  const role = locale === "fi" ? (member.role_fi ?? member.role_en) : (member.role_en ?? member.role_fi);
-  const tagline = locale === "fi" ? (member.tagline_fi ?? member.tagline_en) : (member.tagline_en ?? member.tagline_fi);
+  const isPending = item.status === "pending";
+  const isPublished = item.status === "published";
+  const isArchived = item.status === "archived";
 
   return (
     <div>
-      <Link
-        href="/admin/team"
-        className="mb-4 inline-block text-sm font-medium text-verter-muted hover:text-verter-graphite"
-      >
-        ← {t("sectionTeam")}
-      </Link>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-bold text-verter-graphite">
-            {t("editPrefix")}: {member.name}
+            {t("editPrefix")}: {item.title}
           </h1>
           <p className="mt-2 text-verter-muted">
-            {member.status}
-            {role && ` • ${role}`}
+            {item.type} • {item.status}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -101,9 +88,8 @@ export default function EditTeamClient({ member, locale }: Props) {
               type="button"
               onClick={async () => {
                 if (!confirm(t("restoreConfirm"))) return;
-                const res = await fetch(`/api/admin/team/${member.id}`, {
+                const res = await fetch(`/api/admin/items/${item.id}`, {
                   method: "PATCH",
-                  credentials: "include",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ status: "draft" }),
                 });
@@ -117,45 +103,16 @@ export default function EditTeamClient({ member, locale }: Props) {
         </div>
       </div>
 
-      {mode === "preview" ? (
-        <div className={cardClass}>
-          <div className="flex items-start gap-4 p-6">
-            {member.image_url ? (
-              <img
-                src={member.image_url}
-                alt={member.name}
-                className="h-20 w-20 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-verter-ice text-verter-blue">
-                <span className="text-2xl font-semibold">{member.name.charAt(0)}</span>
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <h2 className="font-heading text-xl font-semibold text-verter-graphite">
-                {member.name}
-              </h2>
-              {role && (
-                <p className="mt-1 text-sm font-medium text-verter-blue">{role}</p>
-              )}
-              {tagline && (
-                <p className="mt-2 text-verter-muted">{tagline}</p>
-              )}
-              {member.strava_url && (
-                <a
-                  href={member.strava_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex text-sm font-medium text-verter-forest hover:underline"
-                >
-                  Strava →
-                </a>
-              )}
-            </div>
-          </div>
+      {isPending && (
+        <div className="mb-8">
+          <QualityChecklist item={item} />
         </div>
+      )}
+
+      {mode === "preview" ? (
+        <ItemDetailPreview item={item} />
       ) : (
-        <TeamForm initial={member} locale={locale} mode="edit" />
+        <ItemForm initial={item} locale={locale} mode="edit" />
       )}
     </div>
   );

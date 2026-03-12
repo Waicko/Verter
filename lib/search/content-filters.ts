@@ -66,6 +66,7 @@ export function filterAndSortContent(
   state: ContentFilterState
 ): ContentItemPublic[] {
   let result = items.filter((item) => {
+    if (item.type === "podcast") return false;
     const typeMatch =
       !state.content_type || item.type === state.content_type;
     const authorMatch =

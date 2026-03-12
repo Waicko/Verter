@@ -25,10 +25,14 @@ export default function ContentPageClient({ items }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const editorialItems = useMemo(
+    () => items.filter((i) => i.type !== "podcast"),
+    [items]
+  );
   const authors = useMemo(
     () =>
-      [...new Set(items.map((i) => i.author).filter(Boolean))].sort() as string[],
-    [items]
+      [...new Set(editorialItems.map((i) => i.author).filter(Boolean))].sort() as string[],
+    [editorialItems]
   );
 
   const filterState = useMemo(
@@ -37,8 +41,8 @@ export default function ContentPageClient({ items }: Props) {
   );
 
   const filteredItems = useMemo(
-    () => filterAndSortContent(items, filterState),
-    [items, filterState]
+    () => filterAndSortContent(editorialItems, filterState),
+    [editorialItems, filterState]
   );
 
   const updateUrl = (state: typeof filterState) => {

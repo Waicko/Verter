@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { getPathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import type { DbTeamMember, DbTeamMemberInsert } from "@/lib/db/team-types";
 import { cardClass, primaryBtn, secondaryBtn } from "@/lib/styles";
@@ -76,7 +76,11 @@ export default function TeamForm({ initial, locale, mode }: TeamFormProps) {
         });
         const json = await res.json();
         if (res.ok && json.id) {
-          router.push(`/admin/team/${json.id}/edit`);
+          const path = getPathname({
+            locale: locale as "fi" | "en",
+            href: `/admin/team/${json.id}/edit`,
+          });
+          router.push(path);
         } else {
           alert(json.error ?? "Create failed");
         }

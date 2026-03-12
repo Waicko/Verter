@@ -305,10 +305,6 @@
     "backToRoutes": "Takaisin reitteihin",
     "submitAnother": "Lähetä toinen"
   },
-  "metadata": {
-    "defaultTitle": "Verter | Juoksupolut Suomessa",
-    "defaultDescription": "Löydä ja suodata juostavia reittejä Suomesta."
-  },
   "disclaimer": {
     "title": "Turvallisuus ja vastuuvapaus",
     "intro": "Verter tarjoaa reittitietoja ja tapahtumaviittauksia polkujuoksijoiden apuvälineenä. Sivuston sisältöä ei tarkisteta jatkuvasti.",
@@ -435,6 +431,8 @@
     }
   },
   "metadata": {
+    "defaultTitle": "Verter | Juoksupolut Suomessa",
+    "defaultDescription": "Löydä ja suodata juostavia reittejä Suomesta.",
     "sectionTitle": "Lähde ja oikeudet",
     "sourceType": "Lähdetyyppi",
     "sourceName": "Lähde",
