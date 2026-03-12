@@ -50,19 +50,27 @@ async function main() {
   }
 
   const cols = Object.keys(rows[0]).sort();
-  console.log("=== Actual column names (from first row) ===\n");
-  cols.forEach((c) => console.log("  ", c));
-  console.log("\n=== Relevant columns for backfill ===\n");
-  const backfillCandidates = ["title", "slug", "summary", "excerpt", "body"];
-  backfillCandidates.forEach((c) => {
+  const localizedExpected = [
+    "title_fi", "title_en", "slug_fi", "slug_en",
+    "excerpt_fi", "excerpt_en", "body_fi", "body_en",
+    "seo_title_fi", "seo_title_en", "seo_description_fi", "seo_description_en",
+  ];
+  const legacyExpected = ["title", "slug", "summary", "body"];
+
+  console.log("=== Localized columns (code expects these) ===\n");
+  let allLocalizedPresent = true;
+  localizedExpected.forEach((c) => {
     const has = cols.includes(c);
-    console.log(`  ${c}: ${has ? "EXISTS" : "MISSING"}`);
+    if (!has) allLocalizedPresent = false;
+    console.log(`  ${c}: ${has ? "OK" : "MISSING"}`);
   });
-  console.log("\n=== Sample row (first) ===\n");
-  const r = rows[0] as Record<string, unknown>;
-  ["title", "slug", "summary", "excerpt", "body"].forEach((k) => {
-    if (k in r) console.log(`  ${k}: ${String(r[k] ?? "").slice(0, 60)}...`);
+  console.log("\n=== Legacy columns (backfill source) ===\n");
+  legacyExpected.forEach((c) => {
+    const has = cols.includes(c);
+    console.log(`  ${c}: ${has ? "OK" : "MISSING"}`);
   });
+  console.log("\n=== Migration status ===\n");
+  console.log(`  All localized columns present: ${allLocalizedPresent ? "YES - migration applied" : "NO - run migration"}`);
 }
 
 main();
