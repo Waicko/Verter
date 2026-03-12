@@ -75,3 +75,28 @@ export async function getPublishedRouteBySlug(
   if (error || !data) return null;
   return data as DbRoute;
 }
+
+/** Fetch published routes by slugs. Returns only routes that exist; invalid slugs are ignored. */
+export async function getPublishedRoutesBySlugs(
+  slugs: string[]
+): Promise<DbRoute[]> {
+  const validSlugs = slugs.filter((s) => typeof s === "string" && s.trim().length > 0);
+  if (validSlugs.length === 0) return [];
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return [];
+
+  const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
+  const { data, error } = await supabase
+    .from("routes")
+    .select("*")
+    .eq("status", "published")
+    .in("slug", validSlugs);
+
+  if (error || !data?.length) return [];
+  const routes = data as DbRoute[];
+  return routes.sort(
+    (a, b) => validSlugs.indexOf(a.slug) - validSlugs.indexOf(b.slug)
+  );
+}
