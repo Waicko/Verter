@@ -60,6 +60,23 @@ export async function getPublishedEventBySlug(
   return data as DbEvent;
 }
 
+/** All events visible in admin (draft + published). Only events with slugs. Used for content event picker. */
+export async function getAdminEvents(): Promise<DbEvent[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return [];
+
+  const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, title, slug, date")
+    .in("status", ["draft", "published"])
+    .order("date", { ascending: true, nullsFirst: false });
+
+  if (error) return [];
+  return (data ?? []).filter((e) => e.slug?.trim()) as DbEvent[];
+}
+
 /** Fallback: get by id when slug is used as id (e.g. uuid) */
 export async function getPublishedEventById(
   id: string

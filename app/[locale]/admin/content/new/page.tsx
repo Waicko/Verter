@@ -1,6 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import ContentItemForm from "@/components/admin/ContentItemForm";
 import { getAdminRoutes } from "@/lib/data/routes-db";
+import { getAdminEvents } from "@/lib/data/events-db";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -18,10 +19,18 @@ export default async function NewContentPage({ params, searchParams }: Props) {
       ? sp.type
       : "blog";
 
-  const routes = await getAdminRoutes();
+  const [routes, events] = await Promise.all([
+    getAdminRoutes(),
+    getAdminEvents(),
+  ]);
   const availableRoutes = routes
     .filter((r) => r.slug?.trim())
     .map((r) => ({ slug: r.slug, title: r.title, area: r.area ?? null }));
+  const availableEvents = events.map((e) => ({
+    slug: e.slug!,
+    title: e.title,
+    date: e.date ?? null,
+  }));
 
   return (
     <div>
@@ -35,6 +44,7 @@ export default async function NewContentPage({ params, searchParams }: Props) {
           locale={locale}
           mode="create"
           availableRoutes={availableRoutes}
+          availableEvents={availableEvents}
         />
       </div>
     </div>

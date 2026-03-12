@@ -21,12 +21,14 @@ type FormData = {
   body: string;
   hero_image: string;
   related_route_slugs: string[];
+  related_event_slugs: string[];
   episode_url: string;
   published_at: string;
   status: "draft" | "published" | "archived";
 } & Omit<MetadataFormValues, "route_origin_type" | "route_origin_name" | "route_origin_url">;
 
 export type AvailableRoute = { slug: string; title: string; area: string | null };
+export type AvailableEvent = { slug: string; title: string; date: string | null };
 
 interface ContentItemFormProps {
   initial?: Partial<DbContentItem> | null;
@@ -34,6 +36,8 @@ interface ContentItemFormProps {
   mode: "create" | "edit";
   /** Route options for content picker (title, area, slug). Loaded via getAdminRoutes. */
   availableRoutes?: AvailableRoute[];
+  /** Event options for content picker (title, date, slug). Loaded via getAdminEvents. */
+  availableEvents?: AvailableEvent[];
 }
 
 function slugify(s: string): string {
@@ -50,6 +54,7 @@ export default function ContentItemForm({
   locale,
   mode,
   availableRoutes = [],
+  availableEvents = [],
 }: ContentItemFormProps) {
   const t = useTranslations("admin");
   const tContent = useTranslations("content");
@@ -68,6 +73,9 @@ export default function ContentItemForm({
     hero_image: initial?.hero_image ?? "",
     related_route_slugs: Array.isArray(initial?.related_route_slugs)
       ? (initial.related_route_slugs as string[]).filter(Boolean)
+      : [],
+    related_event_slugs: Array.isArray((initial as Record<string, unknown>)?.related_event_slugs)
+      ? ((initial as Record<string, unknown>).related_event_slugs as string[]).filter(Boolean)
       : [],
     episode_url: initial?.episode_url ?? "",
     published_at: initial?.published_at ?? "",
@@ -99,6 +107,7 @@ export default function ContentItemForm({
       body: data.body.trim() || "",
       hero_image: data.hero_image.trim() || null,
       related_route_slugs: data.related_route_slugs,
+      related_event_slugs: data.related_event_slugs,
       episode_url: data.content_type === "podcast" ? (data.episode_url.trim() || null) : null,
       published_at: data.published_at.trim() || null,
       status,
@@ -421,6 +430,102 @@ export default function ContentItemForm({
                 </div>
                 <p className="mt-1 text-xs text-verter-muted">
                   {tContent("relatedRoutesHint")}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {tContent("relatedEvents")}
+                </label>
+                <div className="mt-1 space-y-2">
+                  {data.related_event_slugs.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {data.related_event_slugs.map((slug) => {
+                        const ev = availableEvents.find((e) => e.slug === slug);
+                        const dateStr = ev?.date
+                          ? new Date(ev.date).toLocaleDateString(locale, {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : null;
+                        const label = ev
+                          ? `${ev.title} — ${dateStr ?? "-"} — ${ev.slug}`
+                          : slug;
+                        return (
+                          <span
+                            key={slug}
+                            className="inline-flex items-center gap-1 rounded-pill border border-verter-border bg-verter-snow px-3 py-1 text-sm text-verter-graphite"
+                          >
+                            {label}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setData((d) => ({
+                                  ...d,
+                                  related_event_slugs: d.related_event_slugs.filter((s) => s !== slug),
+                                }))
+                              }
+                              className="ml-0.5 text-verter-muted hover:text-verter-graphite"
+                              aria-label="Remove"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {availableEvents.length > 0 ? (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const slug = e.target.value;
+                        if (!slug || data.related_event_slugs.includes(slug)) return;
+                        setData((d) => ({
+                          ...d,
+                          related_event_slugs: [...d.related_event_slugs, slug],
+                        }));
+                      }}
+                      className="w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                    >
+                      <option value="">
+                        {tContent("relatedEventsAdd") ?? "Add an event..."}
+                      </option>
+                      {availableEvents
+                        .filter((e) => !data.related_event_slugs.includes(e.slug))
+                        .map((e) => {
+                          const dateStr = e.date
+                            ? new Date(e.date).toLocaleDateString(locale, {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "-";
+                          return (
+                            <option key={e.slug} value={e.slug}>
+                              {e.title} — {dateStr} — {e.slug}
+                            </option>
+                          );
+                        })}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={data.related_event_slugs.join(", ")}
+                      onChange={(e) => {
+                        const slugs = e.target.value
+                          .split(/[,;\s]+/)
+                          .map((s) => s.trim().toLowerCase())
+                          .filter(Boolean);
+                        setData((d) => ({ ...d, related_event_slugs: slugs }));
+                      }}
+                      placeholder="e.g. nuuksio-classic, koli-trail-2025"
+                      className="w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                    />
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-verter-muted">
+                  {tContent("relatedEventsHint")}
                 </p>
               </div>
               {data.content_type === "podcast" && (
