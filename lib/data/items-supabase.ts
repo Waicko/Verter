@@ -88,33 +88,6 @@ function dbRowToItem(row: Record<string, unknown>): VerterItem {
   } satisfies EventItem;
 }
 
-/** Lightweight items for content admin picker (related items) */
-export type ItemPickerOption = { id: string; title: string; type: string };
-
-export async function getItemsForContentPicker(): Promise<ItemPickerOption[]> {
-  try {
-    const supabase = getSupabaseServerClient();
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!url) return [];
-
-    const { data: rows, error } = await supabase
-      .from("items")
-      .select("id, title, type")
-      .eq("status", "published")
-      .order("title");
-
-    if (error || !rows?.length) return [];
-
-    return rows.map((r) => ({
-      id: String(r.id),
-      title: String(r.title ?? ""),
-      type: String(r.type ?? ""),
-    }));
-  } catch {
-    return [];
-  }
-}
-
 function parseFirstDistance(s: string | null): number | undefined {
   if (!s) return undefined;
   const m = s.match(/(\d+(?:\.\d+)?)/);
@@ -132,41 +105,6 @@ export async function getPublishedItemsFromSupabase(): Promise<VerterItem[]> {
       .from("items")
       .select("*")
       .eq("status", "published");
-
-    if (error || !rows?.length) return [];
-
-    const routeIds = rows
-      .filter((r) => r.type === "route")
-      .map((r) => String(r.id));
-    const aggregatesMap = await getRatingAggregates(routeIds);
-
-    return rows.map((r) => {
-      const row = r as Record<string, unknown>;
-      const id = String(row.id);
-      const agg = row.type === "route" ? aggregatesMap.get(id) : undefined;
-      const enriched = { ...row, rating_aggregate: agg };
-      return dbRowToItem(enriched);
-    });
-  } catch {
-    return [];
-  }
-}
-
-/** Fetch published items by ids (for related content) */
-export async function getPublishedItemsByIds(
-  ids: string[]
-): Promise<VerterItem[]> {
-  if (!ids?.length) return [];
-  try {
-    const supabase = getSupabaseServerClient();
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!url) return [];
-
-    const { data: rows, error } = await supabase
-      .from("items")
-      .select("*")
-      .eq("status", "published")
-      .in("id", ids);
 
     if (error || !rows?.length) return [];
 
