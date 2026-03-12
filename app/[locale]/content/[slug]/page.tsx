@@ -51,8 +51,8 @@ export default async function ContentDetailPage({ params }: Props) {
   };
 
   return (
-    <article className="px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mx-auto max-w-2xl">
+    <article className="min-w-0 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto min-w-0 max-w-2xl">
         <Link
           href="/content"
           className="mb-6 inline-flex text-sm font-medium text-verter-muted hover:text-verter-graphite"
@@ -73,7 +73,7 @@ export default async function ContentDetailPage({ params }: Props) {
         <span className="text-xs font-medium uppercase tracking-wider text-verter-muted">
           {typeLabels[item.type] || item.type}
         </span>
-        <h1 className="mt-2 font-heading text-3xl font-bold text-verter-graphite">
+        <h1 className="mt-2 break-words font-heading text-3xl font-bold text-verter-graphite">
           {item.title}
         </h1>
         {item.published_at && (
@@ -97,7 +97,7 @@ export default async function ContentDetailPage({ params }: Props) {
           }}
         />
 
-        <div className="prose prose-zinc mt-8 max-w-none">
+        <div className="prose prose-zinc mt-8 max-w-none break-words">
           <p className="text-lg text-verter-muted">{item.excerpt}</p>
           {item.body ? (
             <div className="mt-4 text-verter-graphite">
@@ -117,11 +117,11 @@ export default async function ContentDetailPage({ params }: Props) {
         </div>
 
         {relatedRoutes.length > 0 && (
-          <section className="mt-12 border-t border-verter-border pt-8">
+          <section className="mt-12 min-w-0 border-t border-verter-border pt-8">
             <h2 className="font-heading text-lg font-semibold text-verter-graphite">
               {t("relatedRoutes")}
             </h2>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 min-w-0 space-y-2 break-words">
               {relatedRoutes.map((route) => (
                 <li key={route.id}>
                   <Link
@@ -142,11 +142,11 @@ export default async function ContentDetailPage({ params }: Props) {
         )}
 
         {relatedEvents.length > 0 && (
-          <section className="mt-12 border-t border-verter-border pt-8">
+          <section className="mt-12 min-w-0 border-t border-verter-border pt-8">
             <h2 className="font-heading text-lg font-semibold text-verter-graphite">
               {t("relatedEvents")}
             </h2>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 min-w-0 space-y-2 break-words">
               {relatedEvents.map((ev) => (
                 <li key={ev.id}>
                   <Link

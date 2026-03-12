@@ -241,13 +241,13 @@ export default function ContentItemForm({
             <span className="text-xs font-medium uppercase tracking-wider text-verter-muted">
               {typeLabels[data.content_type] || data.content_type}
             </span>
-            <h1 className="mt-2 font-heading text-2xl font-bold text-verter-graphite">
+            <h1 className="mt-2 break-words font-heading text-2xl font-bold text-verter-graphite">
               {data.title || t("content.previewTitle")}
             </h1>
             {data.summary && (
               <p className="mt-2 text-lg text-verter-muted">{data.summary}</p>
             )}
-            <div className="prose prose-zinc mt-6 max-w-none">
+            <div className="prose prose-zinc mt-6 max-w-none break-words">
               <ReactMarkdown>{data.body || ""}</ReactMarkdown>
             </div>
             {data.content_type === "podcast" && data.episode_url && (
@@ -369,7 +369,7 @@ export default function ContentItemForm({
                 </label>
                 <div className="mt-1 space-y-2">
                   {data.related_route_slugs.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex min-w-0 flex-wrap gap-2">
                       {data.related_route_slugs.map((slug) => {
                         const route = availableRoutes.find((r) => r.slug === slug);
                         const label = route
@@ -378,7 +378,7 @@ export default function ContentItemForm({
                         return (
                           <span
                             key={slug}
-                            className="inline-flex items-center gap-1 rounded-pill border border-verter-border bg-verter-snow px-3 py-1 text-sm text-verter-graphite"
+                            className="inline-flex max-w-full min-w-0 items-center gap-1 break-words rounded-pill border border-verter-border bg-verter-snow px-3 py-1 text-sm text-verter-graphite"
                           >
                             {label}
                             <button
@@ -449,7 +449,7 @@ export default function ContentItemForm({
                 </label>
                 <div className="mt-1 space-y-2">
                   {data.related_event_slugs.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex min-w-0 flex-wrap gap-2">
                       {data.related_event_slugs.map((slug) => {
                         const ev = availableEvents.find((e) => e.slug === slug);
                         const dateStr = ev?.date
@@ -465,7 +465,7 @@ export default function ContentItemForm({
                         return (
                           <span
                             key={slug}
-                            className="inline-flex items-center gap-1 rounded-pill border border-verter-border bg-verter-snow px-3 py-1 text-sm text-verter-graphite"
+                            className="inline-flex max-w-full min-w-0 items-center gap-1 break-words rounded-pill border border-verter-border bg-verter-snow px-3 py-1 text-sm text-verter-graphite"
                           >
                             {label}
                             <button

@@ -55,7 +55,7 @@ export default function RouteTrustBadges({ route, className = "" }: RouteTrustBa
         </span>
       )}
       {hasTestedNotes && (
-        <div className="w-full text-sm text-verter-muted">
+        <div className="w-full min-w-0 break-words text-sm text-verter-muted">
           {route.tested_notes}
         </div>
       )}

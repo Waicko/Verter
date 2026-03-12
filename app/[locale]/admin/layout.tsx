@@ -19,8 +19,8 @@ export default async function AdminLayout({ children, params }: Props) {
   }
 
   return (
-    <div className="px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mx-auto max-w-4xl">
+    <div className="min-w-0 overflow-x-hidden px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto min-w-0 max-w-4xl">
         <AdminNav />
         {children}
       </div>

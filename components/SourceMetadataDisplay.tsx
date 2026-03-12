@@ -80,9 +80,9 @@ export default function SourceMetadataDisplay({
     <div className={className}>
       <dl className="space-y-1">
         {items.map(({ label, value }) => (
-          <div key={label} className="flex gap-2">
+          <div key={label} className="flex min-w-0 gap-2">
             <dt className="shrink-0 font-medium text-verter-graphite">{label}:</dt>
-            <dd>{value}</dd>
+            <dd className="min-w-0 break-words">{value}</dd>
           </div>
         ))}
       </dl>

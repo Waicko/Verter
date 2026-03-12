@@ -52,10 +52,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <div
-      className={`${fontVariables} flex min-h-screen flex-col font-sans bg-verter-snow text-verter-graphite`}
+      className={`${fontVariables} flex min-h-screen min-w-0 flex-col overflow-x-hidden font-sans bg-verter-snow text-verter-graphite w-full`}
     >
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-hidden">{children}</main>
       <Footer />
     </div>
   );

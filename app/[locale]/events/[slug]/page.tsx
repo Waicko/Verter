@@ -57,7 +57,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   return (
     <div className="px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mx-auto max-w-2xl">
+        <div className="mx-auto min-w-0 max-w-2xl">
         <Link
           href="/events"
           className="mb-6 inline-flex text-sm font-medium text-verter-muted hover:text-verter-graphite"
@@ -65,10 +65,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           {t("backToEvents")}
         </Link>
 
-        <h1 className="font-heading text-3xl font-bold text-verter-graphite">
+        <h1 className="break-words font-heading text-3xl font-bold text-verter-graphite">
           {ev.title}
         </h1>
-        <p className="mt-2 text-verter-muted">
+        <p className="mt-2 break-words text-verter-muted">
           {ev.location && <span>{ev.location}</span>}
           {dateStr && (ev.location ? ` · ${dateStr}` : dateStr)}
         </p>
@@ -96,7 +96,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <h2 className="text-sm font-medium text-verter-muted">
               {t("about")}
             </h2>
-            <p className="mt-2 text-verter-graphite">{ev.description}</p>
+            <p className="mt-2 break-words text-verter-graphite">{ev.description}</p>
           </div>
         )}
 
@@ -109,11 +109,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         />
 
         {relatedContent.length > 0 && (
-          <section className="mt-12 border-t border-verter-border pt-8">
+          <section className="mt-12 min-w-0 border-t border-verter-border pt-8">
             <h2 className="font-heading text-lg font-semibold text-verter-graphite">
               {t("relatedArticles")}
             </h2>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 min-w-0 space-y-2 break-words">
               {relatedContent.map((item) => (
                 <li key={item.id}>
                   <Link

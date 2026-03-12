@@ -14,6 +14,15 @@ html,
 body {
   background: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal overflow from long URLs/code in prose/markdown content */
+.prose a,
+.prose pre,
+.prose code {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 h1, h2, h3, h4, h5, h6 {
