@@ -2,6 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPublishedRouteBySlug } from "@/lib/data/routes-db";
+import { getPublishedContentItemsByRouteSlug } from "@/lib/data/content-items";
 import RouteDetailWithGpx from "@/components/routes/RouteDetailWithGpx";
 import RouteTrustBadges from "@/components/routes/RouteTrustBadges";
 import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
@@ -46,6 +47,7 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
   const t = await getTranslations("routes");
   const dbRoute = await getPublishedRouteBySlug(slug);
   if (dbRoute) {
+    const relatedContent = await getPublishedContentItemsByRouteSlug(slug);
     return (
       <div className="px-4 py-8 sm:px-6 sm:py-12">
         <div className="mx-auto max-w-2xl">
@@ -84,6 +86,26 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
             includeRouteOrigin
           />
           <RouteGpxDisclaimer />
+
+          {relatedContent.length > 0 && (
+            <section className="mt-12 border-t border-verter-border pt-8">
+              <h2 className="font-heading text-lg font-semibold text-verter-graphite">
+                {t("relatedArticles")}
+              </h2>
+              <ul className="mt-4 space-y-2">
+                {relatedContent.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={`/content/${item.slug}`}
+                      className="text-verter-forest hover:underline"
+                    >
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </div>
     );

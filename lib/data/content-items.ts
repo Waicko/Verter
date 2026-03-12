@@ -60,6 +60,32 @@ export async function getPublishedContentItems(): Promise<ContentItemPublic[]> {
   }
 }
 
+/** Fetch published content items that reference the given route slug in related_route_slugs. */
+export async function getPublishedContentItemsByRouteSlug(
+  routeSlug: string
+): Promise<ContentItemPublic[]> {
+  const slug = typeof routeSlug === "string" ? routeSlug.trim() : "";
+  if (!slug) return [];
+
+  try {
+    const supabase = getSupabaseServerClient();
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
+
+    const { data: rows, error } = await supabase
+      .from("content_items")
+      .select("*")
+      .eq("status", "published")
+      .in("content_type", ["blog", "review", "comparison"])
+      .contains("related_route_slugs", [slug])
+      .order("published_at", { ascending: false, nullsFirst: false });
+
+    if (error || !rows) return [];
+    return rows.map((r) => rowToPublic(r as DbContentItem));
+  } catch {
+    return [];
+  }
+}
+
 /** Fetch content by slug for public detail. Excludes podcast-type (podcasts live on /podcast). */
 export async function getContentBySlug(
   slug: string
