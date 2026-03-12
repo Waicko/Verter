@@ -14,6 +14,20 @@ export async function PATCH(
   const supabase = getSupabaseServerClient();
 
   const isPublish = body.status === "published";
+  const titleFi = body.title_fi?.trim();
+  const slugFi = body.slug_fi?.trim();
+  const bodyFi = body.body_fi?.trim();
+  if (isPublish) {
+    const hasFi =
+      (titleFi ?? "").length > 0 && (slugFi ?? "").length > 0 && (bodyFi ?? "").length > 0;
+    if (!hasFi) {
+      return NextResponse.json(
+        { error: "Publish requires Finnish title, slug and body (title_fi, slug_fi, body_fi)" },
+        { status: 400 }
+      );
+    }
+  }
+
   const publishedAt = body.published_at !== undefined
     ? body.published_at
     : isPublish
@@ -21,11 +35,11 @@ export async function PATCH(
       : undefined;
 
   const raw: Record<string, unknown> = {
-    title: body.title,
-    slug: body.slug,
+    title: body.title ?? (titleFi || body.title_en?.trim() || ""),
+    slug: body.slug ?? slugFi ?? body.slug,
     content_type: body.content_type,
-    summary: body.summary,
-    body: body.body,
+    summary: body.summary ?? body.excerpt_fi,
+    body: body.body ?? bodyFi ?? body.body,
     hero_image: body.hero_image,
     related_route_slugs: body.related_route_slugs,
     related_event_slugs: body.related_event_slugs,
@@ -33,6 +47,18 @@ export async function PATCH(
     author: body.author,
     published_at: publishedAt,
     status: body.status,
+    title_fi: body.title_fi?.trim() || null,
+    title_en: body.title_en?.trim() || null,
+    slug_fi: slugFi || null,
+    slug_en: body.slug_en?.trim() || null,
+    excerpt_fi: body.excerpt_fi?.trim() || null,
+    excerpt_en: body.excerpt_en?.trim() || null,
+    body_fi: bodyFi || null,
+    body_en: body.body_en?.trim() || null,
+    seo_title_fi: body.seo_title_fi?.trim() || null,
+    seo_title_en: body.seo_title_en?.trim() || null,
+    seo_description_fi: body.seo_description_fi?.trim() || null,
+    seo_description_en: body.seo_description_en?.trim() || null,
     source_type: body.source_type,
     source_name: body.source_name,
     source_url: body.source_url,

@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { ItemPickerOption } from "@/lib/data/items-supabase";
+
+export type ItemPickerOption = { id: string; title: string; type: string };
 
 interface RelatedItemsPickerProps {
   items: ItemPickerOption[];

@@ -369,7 +369,13 @@
       "publish": "Julkaise",
       "draftSaved": "Luonnos tallennettu",
       "publishedSuccess": "Sisältö julkaistu",
-      "previewTitle": "Esikatselu"
+      "previewTitle": "Esikatselu",
+      "sectionGeneral": "Yleinen",
+      "sectionFinnish": "Suomi",
+      "sectionEnglish": "Englanti",
+      "seoTitle": "SEO-otsikko",
+      "seoDescription": "SEO-kuvaus",
+      "publishValidationFi": "Julkaisu vaatii suomenkieliset otsikon, slugin ja sisällön."
     },
     "backToDashboard": "← Takaisin hallintaan",
     "navDashboard": "Hallinta",

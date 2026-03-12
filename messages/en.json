@@ -367,7 +367,13 @@
       "publish": "Publish",
       "draftSaved": "Draft saved",
       "publishedSuccess": "Content published",
-      "previewTitle": "Preview"
+      "previewTitle": "Preview",
+      "sectionGeneral": "General",
+      "sectionFinnish": "Finnish",
+      "sectionEnglish": "English",
+      "seoTitle": "SEO title",
+      "seoDescription": "SEO description",
+      "publishValidationFi": "Publishing requires Finnish title, slug and body."
     },
     "backToDashboard": "← Back to dashboard",
     "navDashboard": "Dashboard",

@@ -13,18 +13,26 @@ import SourceRightsMetadataSection, {
 
 type ContentType = "blog" | "review" | "podcast" | "comparison";
 type FormData = {
-  title: string;
-  slug: string;
   content_type: ContentType;
   author: string;
-  summary: string;
-  body: string;
   hero_image: string;
   related_route_slugs: string[];
   related_event_slugs: string[];
   episode_url: string;
   published_at: string;
   status: "draft" | "published" | "archived";
+  title_fi: string;
+  slug_fi: string;
+  excerpt_fi: string;
+  body_fi: string;
+  seo_title_fi: string;
+  seo_description_fi: string;
+  title_en: string;
+  slug_en: string;
+  excerpt_en: string;
+  body_en: string;
+  seo_title_en: string;
+  seo_description_en: string;
 } & Omit<MetadataFormValues, "route_origin_type" | "route_origin_name" | "route_origin_url">;
 
 export type AvailableRoute = { slug: string; title: string; area: string | null };
@@ -63,55 +71,76 @@ export default function ContentItemForm({
   const [modeToggle, setModeToggle] = useState<"edit" | "preview">("edit");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const init = initial as Record<string, unknown> | undefined;
+  const [slugFiManuallyEdited, setSlugFiManuallyEdited] = useState(false);
+  const [slugEnManuallyEdited, setSlugEnManuallyEdited] = useState(false);
   const [data, setData] = useState<FormData>(() => ({
-    title: initial?.title ?? "",
-    slug: initial?.slug ?? "",
     content_type: (initial?.content_type as ContentType) ?? "blog",
     author: initial?.author ?? "",
-    summary: initial?.summary ?? "",
-    body: initial?.body ?? "",
     hero_image: initial?.hero_image ?? "",
     related_route_slugs: Array.isArray(initial?.related_route_slugs)
       ? (initial.related_route_slugs as string[]).filter(Boolean)
       : [],
-    related_event_slugs: Array.isArray((initial as Record<string, unknown>)?.related_event_slugs)
-      ? ((initial as Record<string, unknown>).related_event_slugs as string[]).filter(Boolean)
+    related_event_slugs: Array.isArray(init?.related_event_slugs)
+      ? (init.related_event_slugs as string[]).filter(Boolean)
       : [],
     episode_url: initial?.episode_url ?? "",
     published_at: initial?.published_at ?? "",
     status: (initial?.status as FormData["status"]) ?? "draft",
-    source_type: String((initial as Record<string, unknown>)?.source_type ?? ""),
-    source_name: String((initial as Record<string, unknown>)?.source_name ?? ""),
-    source_url: String((initial as Record<string, unknown>)?.source_url ?? ""),
-    submitted_by_name: String((initial as Record<string, unknown>)?.submitted_by_name ?? ""),
-    submitted_by_email: String((initial as Record<string, unknown>)?.submitted_by_email ?? ""),
-    rights_basis: String((initial as Record<string, unknown>)?.rights_basis ?? ""),
-    license_name: String((initial as Record<string, unknown>)?.license_name ?? ""),
-    license_url: String((initial as Record<string, unknown>)?.license_url ?? ""),
-    verification_status: String((initial as Record<string, unknown>)?.verification_status ?? ""),
+    title_fi: String(init?.title_fi ?? initial?.title ?? ""),
+    slug_fi: String(init?.slug_fi ?? initial?.slug ?? ""),
+    excerpt_fi: String(init?.excerpt_fi ?? initial?.summary ?? ""),
+    body_fi: String(init?.body_fi ?? initial?.body ?? ""),
+    seo_title_fi: String(init?.seo_title_fi ?? ""),
+    seo_description_fi: String(init?.seo_description_fi ?? ""),
+    title_en: String(init?.title_en ?? ""),
+    slug_en: String(init?.slug_en ?? ""),
+    excerpt_en: String(init?.excerpt_en ?? ""),
+    body_en: String(init?.body_en ?? ""),
+    seo_title_en: String(init?.seo_title_en ?? ""),
+    seo_description_en: String(init?.seo_description_en ?? ""),
+    source_type: String(init?.source_type ?? ""),
+    source_name: String(init?.source_name ?? ""),
+    source_url: String(init?.source_url ?? ""),
+    submitted_by_name: String(init?.submitted_by_name ?? ""),
+    submitted_by_email: String(init?.submitted_by_email ?? ""),
+    rights_basis: String(init?.rights_basis ?? ""),
+    license_name: String(init?.license_name ?? ""),
+    license_url: String(init?.license_url ?? ""),
+    verification_status: String(init?.verification_status ?? ""),
   }));
 
   const buildPayload = (status: "draft" | "published"): DbContentItemInsert & Record<string, unknown> => {
-    const fromTitle = slugify(data.title);
-    const trimmed = data.slug.trim();
-    // Use full slug from title when: no slug, or slug looks truncated (1 char) vs title
-    const slug = trimmed && (trimmed.length > 1 || !fromTitle)
-      ? trimmed
-      : fromTitle || trimmed || "";
+    const fromTitleFi = slugify(data.title_fi);
+    const trimmedFi = data.slug_fi.trim();
+    const slugFi = trimmedFi && (trimmedFi.length > 1 || !fromTitleFi)
+      ? trimmedFi
+      : fromTitleFi || trimmedFi || "";
     return {
-      title: data.title.trim(),
-      slug,
+      title: data.title_fi.trim() || data.title_en.trim() || "", // legacy fallback
+      slug: slugFi,
       content_type: data.content_type,
       author: data.author.trim() || null,
-      summary: data.summary.trim() || null,
-      body: data.body.trim() || "",
+      summary: data.excerpt_fi.trim() || null,
+      body: data.body_fi.trim() || "",
       hero_image: data.hero_image.trim() || null,
       related_route_slugs: data.related_route_slugs,
       related_event_slugs: data.related_event_slugs,
       episode_url: data.content_type === "podcast" ? (data.episode_url.trim() || null) : null,
       published_at: data.published_at.trim() || null,
       status,
+      title_fi: data.title_fi.trim() || null,
+      title_en: data.title_en.trim() || null,
+      slug_fi: slugFi || null,
+      slug_en: data.slug_en.trim() || null,
+      excerpt_fi: data.excerpt_fi.trim() || null,
+      excerpt_en: data.excerpt_en.trim() || null,
+      body_fi: data.body_fi.trim() || null,
+      body_en: data.body_en.trim() || null,
+      seo_title_fi: data.seo_title_fi.trim() || null,
+      seo_title_en: data.seo_title_en.trim() || null,
+      seo_description_fi: data.seo_description_fi.trim() || null,
+      seo_description_en: data.seo_description_en.trim() || null,
       source_type: data.source_type?.trim() || null,
       source_name: data.source_name?.trim() || null,
       source_url: data.source_url?.trim() || null,
@@ -125,6 +154,15 @@ export default function ContentItemForm({
   };
 
   const handleSubmit = async (publish: boolean) => {
+    if (publish) {
+      const titleFi = data.title_fi.trim();
+      const slugFi = data.slug_fi.trim();
+      const bodyFi = data.body_fi.trim();
+      if (!titleFi || !slugFi || !bodyFi) {
+        alert(t("content.publishValidationFi"));
+        return;
+      }
+    }
     setLoading(true);
     try {
       const payload = buildPayload(publish ? "published" : "draft");
@@ -242,13 +280,13 @@ export default function ContentItemForm({
               {typeLabels[data.content_type] || data.content_type}
             </span>
             <h1 className="mt-2 break-words font-heading text-2xl font-bold text-verter-graphite">
-              {data.title || t("content.previewTitle")}
+              {data.title_fi || data.title_en || t("content.previewTitle")}
             </h1>
-            {data.summary && (
-              <p className="mt-2 text-lg text-verter-muted">{data.summary}</p>
+            {(data.excerpt_fi || data.excerpt_en) && (
+              <p className="mt-2 text-lg text-verter-muted">{data.excerpt_fi || data.excerpt_en}</p>
             )}
             <div className="prose prose-zinc mt-6 max-w-none break-words">
-              <ReactMarkdown>{data.body || ""}</ReactMarkdown>
+              <ReactMarkdown>{data.body_fi || data.body_en || ""}</ReactMarkdown>
             </div>
             {data.content_type === "podcast" && data.episode_url && (
               <a
@@ -266,40 +304,9 @@ export default function ContentItemForm({
         <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
           <div className={cardClass}>
             <div className="space-y-4 p-6">
-              <div>
-                <label className="block text-sm font-medium text-verter-graphite">
-                  {t("content.title")}
-                </label>
-                <input
-                  type="text"
-                  value={data.title}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setData((d) => ({
-                      ...d,
-                      title: v,
-                      slug: slugManuallyEdited ? d.slug : slugify(v),
-                    }));
-                  }}
-                  required
-                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-verter-graphite">
-                  {t("content.slug")}
-                </label>
-                <input
-                  type="text"
-                  value={data.slug}
-                  onChange={(e) => {
-                    setSlugManuallyEdited(true);
-                    setData((d) => ({ ...d, slug: e.target.value }));
-                  }}
-                  placeholder={slugify(data.title) || "my-post"}
-                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
-                />
-              </div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-verter-muted">
+                {t("content.sectionGeneral")}
+              </h3>
               <div>
                 <label className="block text-sm font-medium text-verter-graphite">
                   {t("content.contentType")}
@@ -326,29 +333,6 @@ export default function ContentItemForm({
                   onChange={(e) => setData((d) => ({ ...d, author: e.target.value }))}
                   placeholder="Verter"
                   className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-verter-graphite">
-                  {t("content.summary")}
-                </label>
-                <textarea
-                  value={data.summary}
-                  onChange={(e) => setData((d) => ({ ...d, summary: e.target.value }))}
-                  rows={2}
-                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-verter-graphite">
-                  {t("content.body")}
-                </label>
-                <textarea
-                  value={data.body}
-                  onChange={(e) => setData((d) => ({ ...d, body: e.target.value }))}
-                  rows={12}
-                  placeholder="Markdown supported"
-                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 font-mono text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
                 />
               </div>
               <div>
@@ -568,6 +552,185 @@ export default function ContentItemForm({
               </div>
             </div>
           </div>
+
+          {/* Finnish section */}
+          <div className={cardClass}>
+            <div className="space-y-4 p-6">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-verter-muted">
+                {t("content.sectionFinnish")}
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.title")} (FI)
+                </label>
+                <input
+                  type="text"
+                  value={data.title_fi}
+                  onChange={(e) => {
+                    setData((d) => ({ ...d, title_fi: e.target.value }));
+                    if (!slugFiManuallyEdited) {
+                      setData((d) => ({ ...d, slug_fi: slugify(e.target.value) }));
+                    }
+                  }}
+                  placeholder="Otsikko"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.slug")} (FI)
+                </label>
+                <input
+                  type="text"
+                  value={data.slug_fi}
+                  onChange={(e) => {
+                    setData((d) => ({ ...d, slug_fi: e.target.value }));
+                    setSlugFiManuallyEdited(true);
+                  }}
+                  placeholder="url-slug"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 font-mono text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.summary")} (FI)
+                </label>
+                <textarea
+                  value={data.excerpt_fi}
+                  onChange={(e) => setData((d) => ({ ...d, excerpt_fi: e.target.value }))}
+                  rows={2}
+                  placeholder="Lyhyt tiivistelmä"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.body")} (FI)
+                </label>
+                <textarea
+                  value={data.body_fi}
+                  onChange={(e) => setData((d) => ({ ...d, body_fi: e.target.value }))}
+                  rows={12}
+                  placeholder="Markdown supported"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 font-mono text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.seoTitle")} (FI)
+                </label>
+                <input
+                  type="text"
+                  value={data.seo_title_fi}
+                  onChange={(e) => setData((d) => ({ ...d, seo_title_fi: e.target.value }))}
+                  placeholder="SEO otsikko"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.seoDescription")} (FI)
+                </label>
+                <textarea
+                  value={data.seo_description_fi}
+                  onChange={(e) => setData((d) => ({ ...d, seo_description_fi: e.target.value }))}
+                  rows={2}
+                  placeholder="SEO kuvaus"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* English section */}
+          <div className={cardClass}>
+            <div className="space-y-4 p-6">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-verter-muted">
+                {t("content.sectionEnglish")}
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.title")} (EN)
+                </label>
+                <input
+                  type="text"
+                  value={data.title_en}
+                  onChange={(e) => {
+                    setData((d) => ({ ...d, title_en: e.target.value }));
+                    if (!slugEnManuallyEdited) {
+                      setData((d) => ({ ...d, slug_en: slugify(e.target.value) }));
+                    }
+                  }}
+                  placeholder="Title"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.slug")} (EN)
+                </label>
+                <input
+                  type="text"
+                  value={data.slug_en}
+                  onChange={(e) => {
+                    setData((d) => ({ ...d, slug_en: e.target.value }));
+                    setSlugEnManuallyEdited(true);
+                  }}
+                  placeholder="url-slug"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 font-mono text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.summary")} (EN)
+                </label>
+                <textarea
+                  value={data.excerpt_en}
+                  onChange={(e) => setData((d) => ({ ...d, excerpt_en: e.target.value }))}
+                  rows={2}
+                  placeholder="Short excerpt"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.body")} (EN)
+                </label>
+                <textarea
+                  value={data.body_en}
+                  onChange={(e) => setData((d) => ({ ...d, body_en: e.target.value }))}
+                  rows={12}
+                  placeholder="Markdown supported"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 font-mono text-sm text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.seoTitle")} (EN)
+                </label>
+                <input
+                  type="text"
+                  value={data.seo_title_en}
+                  onChange={(e) => setData((d) => ({ ...d, seo_title_en: e.target.value }))}
+                  placeholder="SEO title"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {t("content.seoDescription")} (EN)
+                </label>
+                <textarea
+                  value={data.seo_description_en}
+                  onChange={(e) => setData((d) => ({ ...d, seo_description_en: e.target.value }))}
+                  rows={2}
+                  placeholder="SEO description"
+                  className="mt-1 w-full min-w-0 rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+              </div>
+            </div>
+          </div>
+
           <SourceRightsMetadataSection
             values={{
               source_type: data.source_type ?? "",
