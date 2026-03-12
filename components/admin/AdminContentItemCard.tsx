@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { cardClass } from "@/lib/styles";
 import type { AdminContentItem } from "@/lib/data/content-items";
@@ -13,12 +12,12 @@ interface AdminContentItemCardProps {
 }
 
 export default function AdminContentItemCard({ item }: AdminContentItemCardProps) {
-  const locale = useLocale();
   const t = useTranslations("admin");
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
-  const editHref = `/${locale}/admin/content/${item.id}/edit`;
-  const previewHref = `/${locale}/content/${item.slug}`;
+  // Pathname without locale — next-intl Link prepends locale automatically
+  const editHref = `/admin/content/${item.id}/edit`;
+  const previewHref = `/content/${item.slug}`;
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
