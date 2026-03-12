@@ -89,7 +89,7 @@ export default function ContentItemForm({
     status: (initial?.status as FormData["status"]) ?? "draft",
     title_fi: String(init?.title_fi ?? initial?.title ?? ""),
     slug_fi: String(init?.slug_fi ?? initial?.slug ?? ""),
-    excerpt_fi: String(init?.excerpt_fi ?? initial?.summary ?? ""),
+    excerpt_fi: String(init?.excerpt_fi ?? initial?.summary ?? (init?.excerpt as string | undefined) ?? ""),
     body_fi: String(init?.body_fi ?? initial?.body ?? ""),
     seo_title_fi: String(init?.seo_title_fi ?? ""),
     seo_description_fi: String(init?.seo_description_fi ?? ""),

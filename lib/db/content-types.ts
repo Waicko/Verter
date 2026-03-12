@@ -9,7 +9,9 @@ export type DbContentItem = {
   title: string;
   slug: string;
   content_type: "blog" | "review" | "podcast" | "comparison";
+  /** Short description. DB may have summary or excerpt depending on schema. */
   summary: string | null;
+  excerpt?: string | null;
   body: string;
   hero_image: string | null;
   /** Localized fields (FI/EN). Preferred over title/slug/summary/body when present. */

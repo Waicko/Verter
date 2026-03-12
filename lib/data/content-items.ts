@@ -58,9 +58,10 @@ function rowToPublic(row: DbContentItem, locale: string = "fi"): ContentItemPubl
   const slug = hasLocalized
     ? pickLocale(db, locale, "slug_fi", "slug_en", db.slug ?? "")
     : db.slug ?? "";
+  const excerptFallback = db.summary ?? (db as { excerpt?: string | null }).excerpt ?? "";
   const excerpt = hasLocalized
-    ? pickLocale(db, locale, "excerpt_fi", "excerpt_en", db.summary ?? "")
-    : db.summary ?? "";
+    ? pickLocale(db, locale, "excerpt_fi", "excerpt_en", excerptFallback)
+    : excerptFallback;
 
   return {
     id: row.id,
