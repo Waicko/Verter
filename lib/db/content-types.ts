@@ -13,6 +13,8 @@ export type DbContentItem = {
   related_item_ids: string[] | null;
   /** Canonical field for content → route linking. Array of routes.slug values. */
   related_route_slugs: string[] | null;
+  /** Canonical field for content → event linking. Array of events.slug values. */
+  related_event_slugs: string[] | null;
   episode_url: string | null;
   author: string | null;
   published_at: string | null;

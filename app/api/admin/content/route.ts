@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       body: body.body ?? "",
       hero_image: body.hero_image ?? null,
       related_route_slugs: Array.isArray(body.related_route_slugs) ? body.related_route_slugs : [],
+      related_event_slugs: Array.isArray(body.related_event_slugs) ? body.related_event_slugs : [],
       episode_url: body.episode_url ?? null,
       author: body.author ?? null,
       published_at: publishedAt,

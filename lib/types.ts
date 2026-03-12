@@ -92,4 +92,6 @@ export interface ContentItem {
   published_at?: string;
   image_url?: string;
   related_route_slugs?: string[];
+  /** Canonical: slugs of linked events (events.slug). */
+  related_event_slugs?: string[];
 }
