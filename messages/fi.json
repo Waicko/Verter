@@ -125,6 +125,7 @@
     "clearAll": "Tyhjennä",
     "backToContent": "← Takaisin sisältöön",
     "relatedRoutes": "Liittyvät reitit",
+    "relatedRoutesHint": "Pilkuilla erotetut reittien slugit",
     "related": "Liittyy"
   },
   "events": {

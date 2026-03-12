@@ -61,8 +61,8 @@ export default function ContentItemForm({
     summary: initial?.summary ?? "",
     body: initial?.body ?? "",
     hero_image: initial?.hero_image ?? "",
-    related_item_ids: Array.isArray(initial?.related_item_ids)
-      ? (initial.related_item_ids as string[]).filter(Boolean)
+    related_route_slugs: Array.isArray(initial?.related_route_slugs)
+      ? (initial.related_route_slugs as string[]).filter(Boolean)
       : [],
     episode_url: initial?.episode_url ?? "",
     published_at: initial?.published_at ?? "",
@@ -333,6 +333,27 @@ export default function ContentItemForm({
                   placeholder="https://..."
                   className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-verter-graphite">
+                  {tContent("relatedRoutes")}
+                </label>
+                <input
+                  type="text"
+                  value={data.related_route_slugs.join(", ")}
+                  onChange={(e) => {
+                    const slugs = e.target.value
+                      .split(/[,;\s]+/)
+                      .map((s) => s.trim().toLowerCase())
+                      .filter(Boolean);
+                    setData((d) => ({ ...d, related_route_slugs: slugs }));
+                  }}
+                  placeholder="e.g. nouxtreme, koli-trail"
+                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                />
+                <p className="mt-1 text-xs text-verter-muted">
+                  {tContent("relatedRoutesHint")}
+                </p>
               </div>
               {data.content_type === "podcast" && (
                 <div>
