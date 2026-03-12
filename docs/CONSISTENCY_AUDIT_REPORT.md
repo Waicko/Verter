@@ -59,14 +59,7 @@
 
 ## B. What is Partially Working
 
-### 1. Admin Auth Inconsistency
-
-- **Routes admin:** Uses `x-admin-token` header + `ADMIN_TOKEN` env var (token stored in `localStorage`)
-- **Other admin (events, content, team, podcast):** Uses `admin_auth` cookie (set via `/api/admin/auth`)
-
-**Impact:** Two different auth mechanisms; routes admin feels separate from the rest.
-
-### 2. Admin CRUD Gaps
+### 1. Admin CRUD Gaps
 
 | Section | Missing |
 |---------|---------|
@@ -74,26 +67,20 @@
 | Team | No DELETE API or UI |
 | Podcast guests | No DELETE API or UI |
 
-### 3. Content vs Podcast Overlap
+### 2. Content vs Podcast Overlap
 
 - `content_items` has `content_type = 'podcast'` — podcast-type articles appear on `/content` and homepage
 - `/podcast` uses `podcast_guests` only (guest-centric model)
-- **Result:** Two separate podcast representations; `content_type = 'podcast'` in content_items is redundant with podcast_guests
+- **Result:** Two separate podcast representations; `content_type = 'podcast'` in content_items is for podcast-related articles, separate from guest listings. See `docs/PODCAST_ARCHITECTURE_PLAN.md` for future consolidation.
 
-### 4. Events: `?type=camp` Ignored
-
-- `/events?type=camp` and `/leirit`, `/camps` redirect to `/events?type=camp`
-- `events` table has **no `type` column** — all events are fetched; URL param is not used
-- **Result:** "Camps" vs "events" distinction is not implemented in data or UI
-
-### 5. Filter System
+### 3. Filter System
 
 - **Routes:** `RouteFilterBar` + `routes-filters.ts` — area, distance, ascent, has_gpx, sort — **working**
 - **Content:** `FilterBar` (from `components/filters`) + `content-filters.ts` — content_type, author, sort — **working**
-- **Events:** `events-filters.ts` exists but **not wired into** `/events` UI
+- **Events:** `FilterSelect` for `type` (race, camp, community) — **working**; `getPublishedEvents(typeFilter)` filters by `events.type`
 - **Podcast:** `podcast-filters.ts` exists but **not wired into** `/podcast` UI
 
-### 6. Sitemap Gaps
+### 4. Sitemap Gaps
 
 - Missing: `/events`, `/podcast`, `/submit`, `/podcast-guest`
 - `/leirit` and `/camps` are in static paths but redirect to `/events` — acceptable
@@ -119,12 +106,13 @@
 
 ### 4. Events/Podcast Filters in UI
 
-- Filter configs exist but are not connected to the pages
+- Events type filter is **implemented** (race, camp, community).
+- Podcast filter config exists but is not wired into `/podcast` UI.
 
-### 5. `related_item_ids` Semantics
+### 5. `related_item_ids` (Deprecated)
 
-- Stored as array of string IDs; unclear whether they reference `routes`, legacy `items`, or something else
-- No picker or validation that IDs exist
+- Legacy column in `content_items`; semantics unclear.
+- **Canonical linking:** `related_route_slugs` and `related_event_slugs` (slug arrays) are used for content ↔ routes and content ↔ events. Admin uses slug-based pickers (`getAdminRoutes`, `getAdminEvents`).
 
 ---
 
@@ -143,10 +131,10 @@
 
 ### Rename / Clarify
 
-| Current | Suggested | Reason |
-|---------|-----------|--------|
-| `related_item_ids` (content_items) | `related_route_ids` or document as "route IDs" | Clarify that these reference `routes.id` |
-| `RouteFilterBar` imports from `FilterBar` | Extract `DistanceRange`, `ElevationRange` to `lib/types/filters.ts` | Reduce coupling to legacy FilterBar |
+| Current | Note |
+|---------|------|
+| `related_item_ids` (content_items) | Deprecated. Use `related_route_slugs` and `related_event_slugs` for linking. |
+| `RouteFilterBar` imports from `FilterBar` | Consider extracting `DistanceRange`, `ElevationRange` to shared module if refactoring. |
 
 ### Legacy Tables (Do Not Use; Consider Migration Cleanup)
 
@@ -159,31 +147,29 @@
 
 ## E. Recommended Next Implementation Order
 
-1. **Unify admin auth** — Use either cookie or token consistently for all admin sections (recommend cookie to match events/content/team/podcast).
+1. **Add DELETE for content, team, podcast guests** — Small API + UI changes for completeness.
 
-2. **Add DELETE for content, team, podcast guests** — Small API + UI changes for completeness.
+2. **Wire podcast filters** — `podcast-filters.ts` exists; connect to `/podcast` page if needed.
 
-3. **Wire events and podcast filters** — `events-filters.ts` and `podcast-filters.ts` already exist; connect to page components.
-
-4. **Clarify or implement events type** — Either add `type` column to `events` (camp vs event) and filter by it, or remove `?type=camp` from URLs and docs.
-
-5. **Podcast architecture decision** — Choose one:
+3. **Podcast architecture decision** — Choose one:
    - **Option A:** Implement `podcast_episodes` + `podcast_episode_guests` per plan; remove `podcast` from `content_items` content_type.
    - **Option B:** Keep current guest-centric model; document that `content_type = 'podcast'` in content_items is for podcast-related articles, separate from guest listings.
 
-6. **Clean up legacy code** — Remove `ItemCard`, `SubmitForm`, legacy `FilterBar` (after extracting types), and unused types from `lib/types.ts`.
+4. **Clean up legacy code** — Remove `ItemCard`, `SubmitForm`, legacy `FilterBar` (after extracting types), and unused types from `lib/types.ts`.
 
-7. **Ratings** — Either migrate to `route_id` and `routes` table, or remove ratings feature if not in use.
+5. **Ratings** — Either migrate to `route_id` and `routes` table, or remove ratings feature if not in use.
 
-8. **Expand sitemap** — Add `/events`, `/podcast`, `/submit`, `/podcast-guest` if desired for SEO.
+6. **Expand sitemap** — Add `/events`, `/podcast`, `/submit`, `/podcast-guest` if desired for SEO.
 
 ---
 
 ## Summary
 
 - **Public and admin pages are Supabase-backed** with no placeholder/static data in active use.
-- **No legacy `items` system** is used in app code; `items` table and related APIs are deprecated.
-- **Podcast uses `podcast_guests`** (dedicated table), not `content_items` for the podcast page; overlap exists only via `content_type = 'podcast'` in content.
+- **Tables in use:** `routes`, `events`, `content_items`, `team_members`, `podcast_guests`, `podcast_guest_requests`. Legacy `items` table is deprecated.
+- **Admin auth:** Unified — signed `admin_auth` cookie (set via `/api/admin/auth`) used by all admin sections; requires `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`.
+- **Content cross-linking:** Slug-based `related_route_slugs` and `related_event_slugs`; admin picker uses `getAdminRoutes` and `getAdminEvents`; public detail pages show related content/routes/events.
+- **Events type:** `events.type` (race, camp, community) implemented; filter wired in UI.
 - **GPX upload and route detail** work end-to-end with correct slug and GPX URL logic.
 - **Admin CRUD** is complete for events and routes; content, team, and podcast lack delete.
-- **Filter system** is implemented for routes and content; events and podcast configs exist but are not wired.
+- **Filter system** is implemented for routes, content, and events; podcast filter config exists but is not wired.

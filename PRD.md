@@ -36,12 +36,12 @@ The platform is:
      - `/routes`
      - `/events`
      - `/content`
-     - `/podcast` (when enabled)
+     - `/podcast`
    - No single mega-list
 
 4. **App-ready backend**
    - Supabase as unified data layer
-   - Clear item types
+   - Clear table boundaries
    - Status-based publishing
 
 ---
@@ -53,11 +53,11 @@ The platform is:
 Users can:
 
 - Browse routes with filters
-- Browse events and camps
+- Browse events and camps (filter by type: race, camp, community)
 - Read blog posts and reviews
 - Listen to podcasts
-- Submit new route/event/camp suggestions
-- Apply to be podcast guest (if enabled)
+- Submit new route/event suggestions
+- Apply to be podcast guest
 
 Public visibility rule:
 - Only `status='published'` content is visible
@@ -71,44 +71,61 @@ Admin can:
 - Create/edit/publish/archive:
   - Routes
   - Events
-  - Camps
   - Content (blog/review/podcast/comparison)
-- Moderate submissions
+- Moderate submissions (drafts appear in lists; publish from edit pages)
 - Manage team profiles
 - Manage podcast guest requests
 - Feature podcast guests
 
-Admin protected via password gate (MVP).
+Admin protected via signed session cookie.
 Future: Supabase Auth.
 
 ---
 
 ## Data Model Overview
 
-### Items
-Single `items` table:
+### Routes
+`routes` table:
 
-- type: route | event | camp
-- shared base fields
-- type-specific fields
-- status: draft | pending | published | archived
+- Self-guided running routes
+- distance_km, ascent_m, gpx_path
+- status: draft | published
+
+### Events
+`events` table:
+
+- Races, camps, community events
+- type: race | camp | community
+- date, location, registration_url
+- status: draft | published
 
 ### Content
 `content_items` table:
 
-- blog
-- review
-- podcast
-- comparison
+- blog, review, podcast, comparison
 - markdown body
-- related item linking
+- **related_route_slugs** — slug-based links to routes
+- **related_event_slugs** — slug-based links to events
+- status: draft | published | archived
 
 ### Team
-`team_members` table (if DB-driven)
+`team_members` table (DB-driven):
+
+- name, role_fi, role_en, tagline_fi, tagline_en
+- status: draft | published | archived
 
 ### Podcast
-- `podcast_guest_requests`
-- `podcast_guests`
+- `podcast_guests` — featured + past guests (guest-centric model)
+- `podcast_guest_requests` — public form submissions
+
+---
+
+## Cross-Linking (Implemented)
+
+- **Content → Routes:** `related_route_slugs`; public "Related routes" section
+- **Content → Events:** `related_event_slugs`; public "Related events" section
+- **Route → Content:** Content items that reference the route slug; "Related articles" on route detail
+- **Event → Content:** Content items that reference the event slug; "Related articles" on event detail
 
 ---
 

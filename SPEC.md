@@ -10,7 +10,7 @@ Source of truth for goals, scope, and key UX decisions.
 2. **SEO-first** – Public pages are crawlable, localized, and indexable
 3. **List-first UX** – No mandatory overlays; content always accessible
 4. **Clear brand voice** – Story, manifesto, team and podcast presence
-5. **Moderated CMS** – Public suggestions → pending → admin approval
+5. **Moderated CMS** – Public suggestions → draft → admin approval
 6. **App-ready backend** – Shared Supabase backend for future mobile app
 
 ---
@@ -19,7 +19,7 @@ Source of truth for goals, scope, and key UX decisions.
 
 - No public user accounts (web)
 - No web-based ratings (app-only in future)
-- No complex RBAC (password gate for admin for now)
+- No complex RBAC (signed cookie for admin for now)
 - No training planner in web
 - No social features (comments, feeds)
 
@@ -30,13 +30,13 @@ Source of truth for goals, scope, and key UX decisions.
 | Area | Description |
 |------|-------------|
 | **Routes** | Self-guided routes and trails (distance required, elevation optional, GPX optional) |
-| **Events** | Races and recurring runs (date required, multiple distances supported) |
-| **Camps** | Multi-day camps and workshops |
+| **Events** | Races and recurring runs (type: race/camp/community; date required) |
+| **Camps** | Multi-day camps — shown in events hub with `type=camp` filter |
 | **Content** | Blog, reviews, podcasts, comparisons (admin-managed CMS) |
-| **Podcast** | Featured guest + past guests gallery (when implemented) |
+| **Podcast** | Featured guest + past guests gallery (guest-centric model) |
 | **Team** | Admin-editable team profiles |
 | **Story** | About / manifesto page |
-| **Admin Studio** | Full CRUD for items, content, team, guest requests |
+| **Admin Studio** | Full CRUD for routes, events, content, team, guest requests |
 
 ---
 
@@ -44,89 +44,62 @@ Source of truth for goals, scope, and key UX decisions.
 
 ### Hubs (Separated, not unified list)
 
-- `/routes` → type=route only
-- `/events` → type=event + type=camp
-- `/content` → blog/review/podcast/comparison
-- `/about` → story + team + guest CTA
+- `/routes` → `routes` table only
+- `/events` → `events` table (type: race, camp, community)
+- `/content` → blog/review/podcast/comparison (excludes podcast from list; podcast lives on `/podcast`)
+- `/about` → story + team
 - `/admin` → content management
 
 Routes and Events are separate hubs by design.
 
 ---
 
-### Unified Items Model
+### Database Tables
 
-Single `items` table with `type`:
+**routes**
+- title, slug, area, distance_km, ascent_m, description
+- gpx_path (Supabase Storage)
+- status: draft | published
 
-- `route`
-- `event`
-- `camp`
+**events**
+- title, slug, type (race|camp|community), date, location
+- registration_url, description
+- status: draft | published
 
-Shared base fields:
-- id
-- type
-- title
-- slug
-- region
-- country
-- short_description
-- official_url
-- status
+**content_items**
+- title, slug, content_type (blog|review|podcast|comparison)
+- summary, body (markdown), hero_image
+- **related_route_slugs** — array of route slugs
+- **related_event_slugs** — array of event slugs
+- episode_url (podcast only)
+- status: draft | published | archived
 
-Type-specific:
+**team_members**
+- name, role_fi, role_en, tagline_fi, tagline_en
+- status: draft | published | archived
 
-**Route**
-- distance_km (required)
-- elevation_gain_m (optional)
-- technicality
-- terrain_type
-- gpx_url
+**podcast_guests**
+- name, role_fi, role_en, episode_url, featured
+- status: published | hidden
 
-**Event**
-- start_date (required)
-- distance_options (array, required)
-- event_kind
-- recurrence (optional)
-
-**Camp**
-- start_date OR season
-- duration_days
-- focus
-
-Public pages only show `status='published'`.
+See `lib/db/*`, `supabase/migrations/` for full schema.
 
 ---
 
 ### Content Model
 
-`content_items` table:
-
-- title
-- slug
-- content_type (blog|review|podcast|comparison)
-- summary
-- body (markdown)
-- hero_image
-- episode_url (podcast only)
-- related_item_ids
-- status
-- published_at
-
-Static `content.ts` is deprecated.
+- `related_route_slugs` and `related_event_slugs` — slug-based; link to routes.id/events.id via slug
+- `related_item_ids` — **deprecated**; kept for migration compatibility; do not use
+- Public content list excludes `content_type=podcast` (podcasts live on `/podcast`)
 
 ---
 
 ### Admin Workflow
 
-1. Public submission → `status=pending`
-2. Admin review → approve → `published`
-3. Admin can:
-   - Create
-   - Edit
-   - Save draft
-   - Publish
-   - Archive
-4. Admin protected by password gate (temporary solution)
+1. Public submission → `status=draft`
+2. Admin review → publish from edit page
+3. Admin can: Create, Edit, Save draft, Publish, Archive
+4. Admin protected via signed session cookie (`ADMIN_SESSION_SECRET`)
 
 Future:
 - Supabase Auth + RLS
@@ -138,7 +111,7 @@ Future:
 - Map is optional
 - List-first interface
 - Toggle shows map
-- Only routes with coordinates appear on map
+- Only routes with GPX appear on map (coordinates parsed from GPX)
 - Map state persisted in URL/localStorage
 
 ---
@@ -153,9 +126,10 @@ Future:
 
 ## Security Model (Current)
 
-- Admin protected via password gate
-- Public cannot access non-published items
+- Admin protected via signed session cookie (HMAC; 24h expiry)
+- Public cannot access non-published data
 - Supabase public key read-only for published data
+- RLS enabled on routes, events, content_items, team_members, podcast_guests
 
 Future:
 - Proper Supabase Auth for admin
@@ -168,8 +142,8 @@ Future:
 - Next.js 15 (App Router)
 - next-intl
 - Tailwind CSS
-- Leaflet
-- Supabase (items, content, team, guest requests)
+- Leaflet, MapLibre GL
+- Supabase (routes, events, content_items, team, podcast)
 - Vercel (planned production deployment)
 
 ---

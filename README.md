@@ -18,17 +18,18 @@ Verter consists of:
 
 - **Public web app** (Next.js)
 - **Admin Studio** (password-protected)
-- **Supabase backend** (items, content, team, guest requests)
+- **Supabase backend** (routes, events, content_items, team_members, podcast_guests)
 
 Public users:
-- Browse routes, events, camps, and content
-- Submit suggestions
+- Browse routes, events (races/camps/community), and content
+- Submit route and event suggestions
+- Apply to be podcast guest
 
 Admin users:
-- Create/edit/publish routes, events, camps
+- Create/edit/publish routes, events, content
 - Manage blog posts, reviews, podcasts
-- Moderate submissions
 - Manage team and podcast guests
+- Publish or reject public submissions (drafts in events/routes lists)
 
 App redirects to `/fi` by default.
 
@@ -72,6 +73,7 @@ App redirects to `/fi` by default.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (prod) | Supabase anon key (public read) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes (admin ops) | Service role key (server-side only) |
 | `ADMIN_PASSWORD` | Yes (MVP) | Password for `/admin` gate |
+| `ADMIN_SESSION_SECRET` | Yes (admin) | Secret for signing admin session cookies |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Optional | Email for contact/guest CTA |
 
 ⚠️ **Never expose `SUPABASE_SERVICE_ROLE_KEY` to the client.**
@@ -93,22 +95,21 @@ app/
 │   ├── about/                  # Story + Team + Guest CTA
 │   ├── submit/                 # Public suggestion form
 │   └── admin/                  # Admin Studio
-│       ├── items/              # Routes/events/camps CRUD
+│       ├── events/             # Events CRUD
+│       ├── routes/             # Routes CRUD + GPX upload
 │       ├── content/            # Blog/review/podcast CRUD
 │       ├── team/               # Team management
-│       ├── podcast/            # Guest + requests
-│       └── submissions/        # Moderation
+│       ├── podcast/            # Podcast guests + requests
+│       └── submissions/        # Redirects to dashboard
 ├── api/                        # Server routes
 lib/
-├── data/                       # Loaders & queries
+├── data/                       # routes-db, events-db, content-items, team, podcast
 ├── supabase/                   # Client + server config
-├── db/types.ts
-├── types.ts
 components/
-├── ItemCard.tsx
 ├── MapView.tsx
+├── RouteCard.tsx
+├── ContentCard.tsx
 ├── TeamSection.tsx
-├── PodcastGuestSection.tsx
 └── admin/
 messages/                       # FI/EN translations
 supabase/migrations/            # SQL migrations
@@ -120,41 +121,33 @@ supabase/migrations/            # SQL migrations
 
 ### Hubs
 
-- `/routes` → type=route only
-- `/events` → type=event + camp
-- `/content` → blog / review / podcast
-- `/about` → story + team
-- `/admin` → content management
+- `/routes` → Routes (GPX, map, elevation)
+- `/events` → Events (races, camps, community) with type filter
+- `/content` → Blog, reviews, comparisons (podcast-type excluded; podcasts live on `/podcast`)
+- `/podcast` → Featured guest + past guests
+- `/about` → Story + team
+- `/admin` → Full CRUD for routes, events, content, team, podcast
 
-### Items Model
+### Data Model (Supabase)
 
-Single `items` table with `type`:
-- `route`
-- `event`
-- `camp`
+| Table | Purpose | Status |
+|-------|---------|--------|
+| `routes` | GPX routes, distance, ascent, map | Published/draft |
+| `events` | Races, camps, community events | Published/draft; `type` column |
+| `content_items` | Blog, review, podcast, comparison | Published/draft/archived |
+| `team_members` | About page team | Published/draft |
+| `podcast_guests` | Podcast page guests | Published/hidden |
 
-Only `status='published'` is shown publicly.
-
-### Content Model
-
-`content_items` table:
-- blog
-- review
-- podcast
-- comparison
-
-Markdown body + preview in admin.
+Content can link to routes and events via `related_route_slugs` and `related_event_slugs`. Routes and events show related articles.
 
 ### Admin Studio
 
 Admin can:
-- Create/edit/publish/archive items
-- Moderate public submissions
-- Manage content
-- Manage team members
-- Manage podcast guest requests
+- Create/edit/publish/archive routes, events, content
+- Manage team members and podcast guests
+- Publish draft submissions (from events/routes lists)
 
-Admin is protected by password gate (temporary solution).
+Admin auth: signed session cookie (password → `/api/admin/auth`). All admin APIs use `checkAdmin()`.
 
 Future: Supabase Auth + roles.
 
@@ -175,7 +168,7 @@ Future: Supabase Auth + roles.
 ## 📚 Documentation
 
 - [SPEC.md](./SPEC.md) – Goals, scope, UX decisions
-- [DATA_MODEL.md](./DATA_MODEL.md) – Unified items model
+- [DATA_MODEL.md](./DATA_MODEL.md) – Routes, events, content, team, podcast schema
 - [ROADMAP.md](./ROADMAP.md) – Phases and priorities
 
 ---
