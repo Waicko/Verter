@@ -216,7 +216,12 @@
     "pastGuests": "Past guests",
     "noFeaturedYet": "No featured guest yet.",
     "noPastGuestsYet": "No past guests yet.",
-    "listenEpisode": "Listen →"
+    "listenEpisode": "Listen →",
+    "filterByGuest": "Filter by guest",
+    "clearAll": "Clear",
+    "noResults": "No guests found with current filters.",
+    "noResultsFilterHint": "Try clearing filters to see more.",
+    "emptyStateHint": "No guests yet."
   },
   "podcastGuest": {
     "title": "Be a podcast guest",
@@ -472,6 +477,9 @@
     "publicRouteOriginType": "Route origin type"
   },
   "filters": {
+    "allGuests": "All guests",
+    "featured": "Featured",
+    "past": "Past guests",
     "author": "Author",
     "hasGpx": "Only routes with GPX",
     "sortBy": "Sort by",

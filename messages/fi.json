@@ -214,7 +214,12 @@
     "pastGuests": "Kunniagalleria",
     "noFeaturedYet": "Ei vielä viikon vierasta.",
     "noPastGuestsYet": "Ei vielä aiemmin vieraillutta.",
-    "listenEpisode": "Kuuntele →"
+    "listenEpisode": "Kuuntele →",
+    "filterByGuest": "Suodata vieraan mukaan",
+    "clearAll": "Tyhjennä",
+    "noResults": "Vieraita ei löydy valituilla suodattimilla.",
+    "noResultsFilterHint": "Kokeile tyhjentää suodattimia nähdäksesi enemmän.",
+    "emptyStateHint": "Ei vielä vieraita."
   },
   "podcastGuest": {
     "title": "Vieraaksi podiin",
@@ -474,6 +479,9 @@
     "publicRouteOriginType": "Reitin alkuperätyyppi"
   },
   "filters": {
+    "allGuests": "Kaikki vieraat",
+    "featured": "Viikon vieras",
+    "past": "Aiemmat vieraat",
     "author": "Tekijä",
     "hasGpx": "Vain reitit GPX-tiedostolla",
     "sortBy": "Järjestä",

@@ -54,6 +54,28 @@ export async function getFeaturedPodcastGuest(
   }
 }
 
+/** All published guests (featured + past), ordered by featured desc, published_at desc */
+export async function getAllPublishedPodcastGuests(
+  locale: "fi" | "en"
+): Promise<PodcastGuest[]> {
+  try {
+    const supabase = getSupabaseServerClient();
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
+
+    const { data: rows, error } = await supabase
+      .from("podcast_guests")
+      .select("*")
+      .eq("status", "published")
+      .order("featured", { ascending: false })
+      .order("published_at", { ascending: false, nullsFirst: false });
+
+    if (error || !rows?.length) return [];
+    return rows.map((r) => rowToGuest(r as DbPodcastGuest, locale));
+  } catch {
+    return [];
+  }
+}
+
 /** Past guests = featured=false, ordered by published_at desc */
 export async function getPastPodcastGuests(
   locale: "fi" | "en"
