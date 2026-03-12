@@ -21,7 +21,11 @@ export type DbContentItem = {
   updated_at: string;
 } & Partial<SourceRightsMetadata>;
 
-export type DbContentItemInsert = Omit<DbContentItem, "id" | "created_at" | "updated_at"> & {
+/** Insert payload: related_item_ids omitted (deprecated; API uses related_route_slugs). */
+export type DbContentItemInsert = Omit<
+  DbContentItem,
+  "id" | "created_at" | "updated_at" | "related_item_ids"
+> & {
   id?: string;
   created_at?: string;
   updated_at?: string;
