@@ -362,6 +362,8 @@
     "heroImageUrl": "Hero image URL",
       "saveDraft": "Save draft",
       "publish": "Publish",
+      "draftSaved": "Draft saved",
+      "publishedSuccess": "Content published",
       "previewTitle": "Preview"
     },
     "backToDashboard": "← Back to dashboard",

@@ -364,6 +364,8 @@
     "heroImageUrl": "Hero-kuvan URL",
       "saveDraft": "Tallenna luonnokseksi",
       "publish": "Julkaise",
+      "draftSaved": "Luonnos tallennettu",
+      "publishedSuccess": "Sisältö julkaistu",
       "previewTitle": "Esikatselu"
     },
     "backToDashboard": "← Takaisin hallintaan",

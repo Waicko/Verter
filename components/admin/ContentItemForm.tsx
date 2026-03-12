@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getPathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
@@ -61,6 +61,7 @@ export default function ContentItemForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [modeToggle, setModeToggle] = useState<"edit" | "preview">("edit");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [data, setData] = useState<FormData>(() => ({
@@ -135,8 +136,10 @@ export default function ContentItemForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (res.ok) router.refresh();
-        else {
+        if (res.ok) {
+          setSuccessMessage(publish ? t("content.publishedSuccess") : t("content.draftSaved"));
+          router.refresh();
+        } else {
           const err = await res.json();
           alert(err.error ?? "Update failed");
         }
@@ -193,6 +196,14 @@ export default function ContentItemForm({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
+        {successMessage && (
+          <div
+            role="status"
+            className="rounded-card border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+          >
+            {successMessage}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setModeToggle(modeToggle === "edit" ? "preview" : "edit")}
