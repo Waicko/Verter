@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "@/i18n/navigation";
+import { getPathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import type { DbContentItem, DbContentItemInsert } from "@/lib/db/content-types";
@@ -26,12 +26,14 @@ type FormData = {
   status: "draft" | "published" | "archived";
 } & Omit<MetadataFormValues, "route_origin_type" | "route_origin_name" | "route_origin_url">;
 
+export type AvailableRoute = { slug: string; title: string; area: string | null };
+
 interface ContentItemFormProps {
   initial?: Partial<DbContentItem> | null;
   locale: string;
   mode: "create" | "edit";
-  /** Published route slugs for datalist/helper (from server). */
-  availableRouteSlugs?: string[];
+  /** Route options for content picker (title, area, slug). Loaded via getAdminRoutes. */
+  availableRoutes?: AvailableRoute[];
 }
 
 function slugify(s: string): string {
@@ -47,7 +49,7 @@ export default function ContentItemForm({
   initial,
   locale,
   mode,
-  availableRouteSlugs = [],
+  availableRoutes = [],
 }: ContentItemFormProps) {
   const t = useTranslations("admin");
   const tContent = useTranslations("content");
@@ -138,7 +140,11 @@ export default function ContentItemForm({
         });
         const json = await res.json();
         if (res.ok && json.id) {
-          router.push(`/admin/content/${json.id}/edit`);
+          const path = getPathname({
+            locale: locale as "fi" | "en",
+            href: `/admin/content/${json.id}/edit`,
+          });
+          router.push(path);
         } else {
           alert(json.error ?? "Create failed");
         }
@@ -341,37 +347,80 @@ export default function ContentItemForm({
                 <label className="block text-sm font-medium text-verter-graphite">
                   {tContent("relatedRoutes")}
                 </label>
-                <input
-                  type="text"
-                  list="related-route-slugs-datalist"
-                  value={data.related_route_slugs.join(", ")}
-                  onChange={(e) => {
-                    const slugs = e.target.value
-                      .split(/[,;\s]+/)
-                      .map((s) => s.trim().toLowerCase())
-                      .filter(Boolean);
-                    setData((d) => ({ ...d, related_route_slugs: slugs }));
-                  }}
-                  placeholder="e.g. nouxtreme, koli-trail"
-                  className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
-                />
-                {availableRouteSlugs.length > 0 && (
-                  <datalist id="related-route-slugs-datalist">
-                    {availableRouteSlugs.map((s) => (
-                      <option key={s} value={s} />
-                    ))}
-                  </datalist>
-                )}
+                <div className="mt-1 space-y-2">
+                  {data.related_route_slugs.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {data.related_route_slugs.map((slug) => {
+                        const route = availableRoutes.find((r) => r.slug === slug);
+                        const label = route
+                          ? `${route.title} — ${route.area ?? "-"} — ${route.slug}`
+                          : slug;
+                        return (
+                          <span
+                            key={slug}
+                            className="inline-flex items-center gap-1 rounded-pill border border-verter-border bg-verter-snow px-3 py-1 text-sm text-verter-graphite"
+                          >
+                            {label}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setData((d) => ({
+                                  ...d,
+                                  related_route_slugs: d.related_route_slugs.filter((s) => s !== slug),
+                                }))
+                              }
+                              className="ml-0.5 text-verter-muted hover:text-verter-graphite"
+                              aria-label="Remove"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {availableRoutes.length > 0 ? (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const slug = e.target.value;
+                        if (!slug || data.related_route_slugs.includes(slug)) return;
+                        setData((d) => ({
+                          ...d,
+                          related_route_slugs: [...d.related_route_slugs, slug],
+                        }));
+                      }}
+                      className="w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                    >
+                      <option value="">
+                        {tContent("relatedRoutesAdd") ?? "Add a route..."}
+                      </option>
+                      {availableRoutes
+                        .filter((r) => !data.related_route_slugs.includes(r.slug))
+                        .map((r) => (
+                          <option key={r.slug} value={r.slug}>
+                            {r.title} — {r.area ?? "-"} — {r.slug}
+                          </option>
+                        ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={data.related_route_slugs.join(", ")}
+                      onChange={(e) => {
+                        const slugs = e.target.value
+                          .split(/[,;\s]+/)
+                          .map((s) => s.trim().toLowerCase())
+                          .filter(Boolean);
+                        setData((d) => ({ ...d, related_route_slugs: slugs }));
+                      }}
+                      placeholder="e.g. nouxtreme, koli-trail"
+                      className="w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
+                    />
+                  )}
+                </div>
                 <p className="mt-1 text-xs text-verter-muted">
                   {tContent("relatedRoutesHint")}
-                  {availableRouteSlugs.length > 0 && (
-                    <>
-                      {" — "}
-                      {tContent("relatedRoutesAvailable")}:{" "}
-                      {availableRouteSlugs.slice(0, 12).join(", ")}
-                      {availableRouteSlugs.length > 12 && " …"}
-                    </>
-                  )}
                 </p>
               </div>
               {data.content_type === "podcast" && (

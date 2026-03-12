@@ -128,7 +128,8 @@
     "clearAll": "Clear",
     "backToContent": "← Back to content",
     "relatedRoutes": "Related routes",
-    "relatedRoutesHint": "Comma-separated route slugs",
+    "relatedRoutesHint": "Select routes from the list to link to this content.",
+    "relatedRoutesAdd": "Add a route...",
     "relatedRoutesAvailable": "Available",
     "related": "Related"
   },

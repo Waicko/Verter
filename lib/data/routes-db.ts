@@ -41,6 +41,23 @@ export function getGpxDownloadUrl(gpxPath: string): string {
   return data.publicUrl;
 }
 
+/** All routes visible in admin (draft + published). Used for content route picker. */
+export async function getAdminRoutes(): Promise<DbRoute[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return [];
+
+  const supabase = createClient(url, anonKey, { auth: { persistSession: false } });
+  const { data, error } = await supabase
+    .from("routes")
+    .select("*")
+    .in("status", ["draft", "published"])
+    .order("title", { ascending: true });
+
+  if (error) return [];
+  return (data ?? []) as DbRoute[];
+}
+
 export async function getPublishedRoutes(): Promise<DbRoute[]> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

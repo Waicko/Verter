@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import ContentItemForm from "@/components/admin/ContentItemForm";
-import { getPublishedRoutes } from "@/lib/data/routes-db";
+import { getAdminRoutes } from "@/lib/data/routes-db";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
 
@@ -21,8 +21,10 @@ export default async function EditContentPage({ params }: Props) {
     notFound();
   }
 
-  const routes = await getPublishedRoutes();
-  const availableRouteSlugs = routes.map((r) => r.slug).filter(Boolean);
+  const routes = await getAdminRoutes();
+  const availableRoutes = routes
+    .filter((r) => r.slug?.trim())
+    .map((r) => ({ slug: r.slug, title: r.title, area: r.area ?? null }));
 
   return (
     <div>
@@ -35,7 +37,7 @@ export default async function EditContentPage({ params }: Props) {
           initial={item}
           locale={locale}
           mode="edit"
-          availableRouteSlugs={availableRouteSlugs}
+          availableRoutes={availableRoutes}
         />
       </div>
     </div>

@@ -126,7 +126,8 @@
     "clearAll": "Tyhjennä",
     "backToContent": "← Takaisin sisältöön",
     "relatedRoutes": "Liittyvät reitit",
-    "relatedRoutesHint": "Pilkuilla erotetut reittien slugit",
+    "relatedRoutesHint": "Valitse reitit listasta linkittääksesi sisältöön.",
+    "relatedRoutesAdd": "Lisää reitti...",
     "relatedRoutesAvailable": "Vaihtoehdot",
     "related": "Liittyy"
   },
