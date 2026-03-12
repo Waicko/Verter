@@ -127,6 +127,7 @@
     "backToContent": "← Takaisin sisältöön",
     "relatedRoutes": "Liittyvät reitit",
     "relatedRoutesHint": "Pilkuilla erotetut reittien slugit",
+    "relatedRoutesAvailable": "Vaihtoehdot",
     "related": "Liittyy"
   },
   "events": {

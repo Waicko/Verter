@@ -30,6 +30,8 @@ interface ContentItemFormProps {
   initial?: Partial<DbContentItem> | null;
   locale: string;
   mode: "create" | "edit";
+  /** Published route slugs for datalist/helper (from server). */
+  availableRouteSlugs?: string[];
 }
 
 function slugify(s: string): string {
@@ -45,6 +47,7 @@ export default function ContentItemForm({
   initial,
   locale,
   mode,
+  availableRouteSlugs = [],
 }: ContentItemFormProps) {
   const t = useTranslations("admin");
   const tContent = useTranslations("content");
@@ -340,6 +343,7 @@ export default function ContentItemForm({
                 </label>
                 <input
                   type="text"
+                  list="related-route-slugs-datalist"
                   value={data.related_route_slugs.join(", ")}
                   onChange={(e) => {
                     const slugs = e.target.value
@@ -351,8 +355,23 @@ export default function ContentItemForm({
                   placeholder="e.g. nouxtreme, koli-trail"
                   className="mt-1 w-full rounded-card border border-verter-border px-3 py-2 text-verter-graphite focus:border-verter-blue focus:outline-none focus:ring-1 focus:ring-verter-blue"
                 />
+                {availableRouteSlugs.length > 0 && (
+                  <datalist id="related-route-slugs-datalist">
+                    {availableRouteSlugs.map((s) => (
+                      <option key={s} value={s} />
+                    ))}
+                  </datalist>
+                )}
                 <p className="mt-1 text-xs text-verter-muted">
                   {tContent("relatedRoutesHint")}
+                  {availableRouteSlugs.length > 0 && (
+                    <>
+                      {" — "}
+                      {tContent("relatedRoutesAvailable")}:{" "}
+                      {availableRouteSlugs.slice(0, 12).join(", ")}
+                      {availableRouteSlugs.length > 12 && " …"}
+                    </>
+                  )}
                 </p>
               </div>
               {data.content_type === "podcast" && (

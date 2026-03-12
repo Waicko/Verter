@@ -129,6 +129,7 @@
     "backToContent": "← Back to content",
     "relatedRoutes": "Related routes",
     "relatedRoutesHint": "Comma-separated route slugs",
+    "relatedRoutesAvailable": "Available",
     "related": "Related"
   },
   "events": {

@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import ContentItemForm from "@/components/admin/ContentItemForm";
+import { getPublishedRoutes } from "@/lib/data/routes-db";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -17,6 +18,9 @@ export default async function NewContentPage({ params, searchParams }: Props) {
       ? sp.type
       : "blog";
 
+  const routes = await getPublishedRoutes();
+  const availableRouteSlugs = routes.map((r) => r.slug).filter(Boolean);
+
   return (
     <div>
       <h1 className="font-heading text-3xl font-bold text-verter-graphite">
@@ -28,6 +32,7 @@ export default async function NewContentPage({ params, searchParams }: Props) {
           initial={{ content_type: initialType }}
           locale={locale}
           mode="create"
+          availableRouteSlugs={availableRouteSlugs}
         />
       </div>
     </div>
