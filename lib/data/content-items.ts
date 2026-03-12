@@ -9,6 +9,9 @@ export type ContentItemPublic = {
   type: "blog" | "review" | "podcast" | "comparison";
   published_at?: string;
   image_url?: string;
+  /** Canonical: slugs of linked routes (routes.slug). */
+  related_route_slugs?: string[];
+  /** @deprecated Use related_route_slugs for content → route linking. */
   related_item_ids?: string[];
   author?: string | null;
 };
@@ -22,6 +25,7 @@ export type ContentItemDetail = ContentItemPublic & {
 };
 
 function rowToPublic(row: DbContentItem): ContentItemPublic {
+  const db = row as DbContentItem & { related_route_slugs?: string[] | null };
   return {
     id: row.id,
     slug: row.slug,
@@ -30,6 +34,7 @@ function rowToPublic(row: DbContentItem): ContentItemPublic {
     type: row.content_type,
     published_at: row.published_at ?? undefined,
     image_url: row.hero_image ?? undefined,
+    related_route_slugs: Array.isArray(db.related_route_slugs) ? db.related_route_slugs : undefined,
     related_item_ids: Array.isArray(row.related_item_ids) ? row.related_item_ids : undefined,
     author: row.author ?? undefined,
   };
