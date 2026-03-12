@@ -92,6 +92,32 @@ export async function getPublishedContentItemsByRouteSlug(
   }
 }
 
+/** Fetch published content items that reference the given event slug in related_event_slugs. */
+export async function getPublishedContentItemsByEventSlug(
+  eventSlug: string
+): Promise<ContentItemPublic[]> {
+  const slug = typeof eventSlug === "string" ? eventSlug.trim() : "";
+  if (!slug) return [];
+
+  try {
+    const supabase = getSupabaseServerClient();
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
+
+    const { data: rows, error } = await supabase
+      .from("content_items")
+      .select("*")
+      .eq("status", "published")
+      .in("content_type", ["blog", "review", "comparison"])
+      .contains("related_event_slugs", [slug])
+      .order("published_at", { ascending: false, nullsFirst: false });
+
+    if (error || !rows) return [];
+    return rows.map((r) => rowToPublic(r as DbContentItem));
+  } catch {
+    return [];
+  }
+}
+
 /** Fetch content by slug for public detail. Excludes podcast-type (podcasts live on /podcast). */
 export async function getContentBySlug(
   slug: string

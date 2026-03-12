@@ -5,6 +5,7 @@ import {
   getPublishedEventBySlug,
   getPublishedEventById,
 } from "@/lib/data/events-db";
+import { getPublishedContentItemsByEventSlug } from "@/lib/data/content-items";
 import EventRequestForm from "@/components/EventRequestForm";
 import SourceMetadataDisplay from "@/components/SourceMetadataDisplay";
 
@@ -41,6 +42,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   const ev = await getPublishedEventBySlug(slug) ?? await getPublishedEventById(slug);
   if (!ev) notFound();
+
+  const relatedContent = ev.slug?.trim()
+    ? await getPublishedContentItemsByEventSlug(ev.slug)
+    : [];
 
   const dateStr = ev.date
     ? new Date(ev.date).toLocaleDateString(locale, {
@@ -102,6 +107,26 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             verification_status: ev.verification_status ?? undefined,
           }}
         />
+
+        {relatedContent.length > 0 && (
+          <section className="mt-12 border-t border-verter-border pt-8">
+            <h2 className="font-heading text-lg font-semibold text-verter-graphite">
+              {t("relatedArticles")}
+            </h2>
+            <ul className="mt-4 space-y-2">
+              {relatedContent.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    href={`/content/${item.slug}`}
+                    className="text-verter-forest hover:underline"
+                  >
+                    {item.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mt-12 border-t border-verter-border pt-12">
           <h2 className="font-heading text-xl font-semibold text-verter-graphite">
