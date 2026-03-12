@@ -27,7 +27,7 @@ export async function PATCH(
     summary: body.summary,
     body: body.body,
     hero_image: body.hero_image,
-    related_item_ids: body.related_item_ids,
+    related_route_slugs: body.related_route_slugs,
     episode_url: body.episode_url,
     author: body.author,
     published_at: publishedAt,

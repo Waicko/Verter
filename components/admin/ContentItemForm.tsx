@@ -20,7 +20,7 @@ type FormData = {
   summary: string;
   body: string;
   hero_image: string;
-  related_item_ids: string[];
+  related_route_slugs: string[];
   episode_url: string;
   published_at: string;
   status: "draft" | "published" | "archived";
@@ -93,7 +93,7 @@ export default function ContentItemForm({
       summary: data.summary.trim() || null,
       body: data.body.trim() || "",
       hero_image: data.hero_image.trim() || null,
-      related_item_ids: data.related_item_ids,
+      related_route_slugs: data.related_route_slugs,
       episode_url: data.content_type === "podcast" ? (data.episode_url.trim() || null) : null,
       published_at: data.published_at.trim() || null,
       status,
